@@ -1,0 +1,2822 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rani Strategic Planner | 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Markdown Parser for AI responses -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rani-bg': '#576332',       // Olive Deep
+                        'rani-sidebar': '#4a542a',  // Slightly darker for sidebar
+                        'rani-card': '#65723E',     // Lighter Olive for cards
+                        'rani-text': '#F6F4F1',     // Off-white text
+                        'rani-cream': '#FFF0BA',    // Cream accents (Gold-ish)
+                        'rani-orange': '#FF9F29',   // Vibrant Orange
+                        'rani-gold': '#D4AF37',     // True Gold
+                        'rani-light-orange': '#FFB055',
+                        'rani-salmon': '#FFDAB9'    // Soft Light Salmon
+                    },
+                    fontFamily: {
+                        sans: ['Lato', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #576332;
+            color: #F6F4F1;
+        }
+        
+        /* Glassmorphism Logic */
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 240, 186, 0.15);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .glass-panel:hover {
+            background-color: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 240, 186, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Nav Item Styles */
+        .nav-item {
+            cursor: pointer;
+            transition: all 0.3s;
+            border-right: 3px solid transparent;
+            margin-bottom: 4px;
+        }
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #FFF0BA;
+        }
+        .nav-item.active {
+            background-color: rgba(255, 240, 186, 0.15);
+            border-right-color: #FF9F29; 
+            color: #FFF0BA;
+        }
+        .nav-item i {
+            width: 24px;
+            text-align: center;
+            transition: color 0.3s;
+        }
+        .nav-item.active i {
+            color: #FF9F29;
+        }
+
+        /* Checkbox Custom Style */
+        .custom-checkbox input:checked + div {
+            background-color: #FF9F29;
+            border-color: #FF9F29;
+        }
+        .custom-checkbox input:checked + div svg {
+            display: block;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #4a542a; }
+        ::-webkit-scrollbar-thumb { background: #FF9F29; border-radius: 3px; }
+
+        /* Input Number Styling */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .progress-bar-fill {
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Quote Animation */
+        #dynamic-quote {
+            transition: opacity 0.8s ease-in-out;
+        }
+        .quote-hidden {
+            opacity: 0;
+        }
+        .quote-visible {
+            opacity: 1;
+        }
+        
+        /* Modal Styles */
+        #custom-modal-overlay {
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Chat Styles */
+        .chat-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .chat-user {
+            background-color: #FF9F29;
+            color: #576332;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+        .chat-ai {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #F6F4F1;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col md:flex-row overflow-hidden font-sans bg-rani-bg selection:bg-rani-orange selection:text-white relative">
+
+    <!-- CUSTOM MODAL (Hidden by default) -->
+    <div id="custom-modal-overlay" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="bg-[#4a542a] border border-rani-orange/30 p-8 rounded-2xl shadow-2xl w-96 max-w-[90%] transform scale-100 transition-transform">
+            <h3 id="modal-title" class="text-xl font-serif text-rani-cream mb-4 font-bold">Confirmação</h3>
+            <div id="modal-content" class="mb-6 text-sm text-white/90"></div>
+            
+            <!-- Dynamic Inputs Container -->
+            <div id="modal-inputs" class="mb-6 hidden flex flex-col gap-3">
+                <!-- Inputs injected via JS -->
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button onclick="window.closeModal()" type="button" class="px-4 py-2 rounded-lg border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-colors text-sm">Cancelar</button>
+                <button id="modal-confirm-btn" type="button" class="px-4 py-2 rounded-lg bg-rani-orange text-rani-bg font-bold hover:bg-white hover:text-rani-orange transition-colors text-sm">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API KEY MODAL -->
+    <div id="api-key-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-[#4a542a] border border-rani-orange p-8 rounded-2xl shadow-2xl w-96 max-w-[90%]">
+            <h3 class="text-xl font-serif text-rani-cream mb-2 font-bold">Configurar IA</h3>
+            <p class="text-xs text-white/70 mb-4">Insira sua chave de API do Google Gemini para ativar o mentor.</p>
+            <input type="password" id="gemini-api-key-input" placeholder="Cole sua API Key aqui..." class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-rani-orange text-sm mb-4">
+            <div class="flex justify-end gap-3">
+                <button onclick="document.getElementById('api-key-modal').classList.add('hidden')" class="text-white/50 hover:text-white text-sm">Cancelar</button>
+                <button onclick="window.saveApiKey()" class="bg-rani-orange text-rani-bg font-bold px-4 py-2 rounded-lg hover:bg-white transition-colors text-sm">Salvar</button>
+            </div>
+            <p class="text-[10px] text-white/30 mt-4 text-center">A chave é salva apenas no seu navegador.</p>
+        </div>
+    </div>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-full md:w-64 bg-rani-sidebar flex flex-col border-r border-white/10 shrink-0 z-20 shadow-xl">
+        <!-- Profile Header -->
+        <div class="p-8 pb-6 text-center border-b border-white/10">
+            <!-- Profile Image Container with Upload -->
+            <div class="relative w-24 h-24 mx-auto mb-4 group cursor-pointer" onclick="document.getElementById('profile-upload').click()" title="Clique para alterar a foto">
+                <input type="file" id="profile-upload" class="hidden" accept="image/*" onchange="updateProfileImage(this)">
+                
+                <div class="absolute inset-0 rounded-full border-2 border-rani-orange opacity-70 group-hover:scale-110 transition-transform duration-500"></div>
+                <div class="w-full h-full rounded-full border-2 border-white/20 p-1 relative overflow-hidden">
+                    <img id="profile-img" src="https://ui-avatars.com/api/?name=Ranielly+Cristina&background=FFF0BA&color=576332&font-size=0.4" class="w-full h-full rounded-full object-cover shadow-lg">
+                    
+                    <!-- Overlay on Hover -->
+                    <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity rounded-full">
+                        <i class="fas fa-camera text-white/80"></i>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="font-serif text-xl text-rani-cream tracking-wide font-bold">Ranielly Cristina</h2>
+            <p class="text-[10px] text-rani-text/50 uppercase tracking-widest mt-1 font-bold">UGC Creator e Influencer</p>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="flex-1 overflow-y-auto py-6 px-0 space-y-1">
+            <div class="px-6 pb-2 text-[10px] uppercase tracking-widest text-rani-text/40 font-bold">Principal</div>
+            
+            <div onclick="window.switchTab('dashboard')" class="nav-item active flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-th-large"></i>
+                Visão Geral
+            </div>
+            
+            <div class="px-6 pb-2 pt-6 text-[10px] uppercase tracking-widest text-rani-text/40 font-bold">Estilo de Vida</div>
+
+            <div onclick="window.switchTab('personal')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-heart"></i>
+                Pessoal
+            </div>
+            <div onclick="window.switchTab('health')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-heartbeat"></i>
+                Saúde
+            </div>
+            <div onclick="window.switchTab('relationships')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-hand-holding-heart"></i>
+                Relacionamento
+            </div>
+
+            <div class="px-6 pb-2 pt-6 text-[10px] uppercase tracking-widest text-rani-text/40 font-bold">Estudos</div>
+
+            <div onclick="window.switchTab('english')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-language"></i>
+                Inglês
+            </div>
+            <div onclick="window.switchTab('studies')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-graduation-cap"></i>
+                Cursos
+            </div>
+
+            <div class="px-6 pb-2 pt-6 text-[10px] uppercase tracking-widest text-rani-text/40 font-bold">Profissional</div>
+
+            <div onclick="window.switchTab('career')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-briefcase"></i>
+                Vendas e Mídias
+            </div>
+            <div onclick="window.switchTab('finance')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-wallet"></i>
+                Financeiro
+            </div>
+            <div onclick="window.switchTab('payments')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-money-check-alt"></i>
+                Recebimentos
+            </div>
+            
+             <div class="px-6 pb-2 pt-6 text-[10px] uppercase tracking-widest text-rani-text/40 font-bold">Outros</div>
+             
+             <div onclick="window.switchTab('notes')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-sticky-note"></i>
+                Anotações
+            </div>
+            <div onclick="window.switchTab('ai_mentor')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80 text-rani-orange">
+                <i class="fas fa-robot"></i>
+                Mentoria IA
+            </div>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="p-6 border-t border-white/10">
+            <div class="bg-gradient-to-r from-rani-orange to-rani-gold p-4 rounded-xl shadow-lg shadow-black/20 text-center relative overflow-hidden group">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-white/20 rounded-full -mr-8 -mt-8 blur-xl"></div>
+                <p class="text-[10px] font-bold text-rani-bg uppercase mb-1">Status 2026</p>
+                <p class="text-2xl font-serif font-black text-rani-bg">Janeiro</p>
+                <div class="w-full bg-rani-bg/20 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div class="bg-rani-bg h-full w-[8%]"></div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 overflow-y-auto bg-rani-bg relative scroll-smooth">
+        
+        <!-- Mobile Header -->
+        <div class="md:hidden p-4 flex items-center justify-between border-b border-white/10 sticky top-0 bg-rani-bg z-30">
+            <h1 class="font-serif text-xl text-rani-cream">Rani OS</h1>
+            <div class="text-rani-orange"><i class="fas fa-bars"></i></div>
+        </div>
+
+        <div class="p-6 md:p-12 max-w-7xl mx-auto min-h-full">
+
+            <!-- ===================== 1. VISÃO GERAL ===================== -->
+            <section id="dashboard" class="tab-content fade-in">
+                <!-- Header (Same as before) -->
+                <header class="mb-10 flex flex-col md:flex-row justify-between md:items-end gap-4">
+                    <div>
+                        <h1 class="font-serif text-4xl text-white mb-2">Visão Geral</h1>
+                        <p class="text-rani-text/80">Seu centro de comando diário.</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-1">
+                        <span id="current-date-header" class="text-xs text-rani-text/90 uppercase tracking-widest font-bold"></span>
+                        <span class="px-4 py-2 rounded-full bg-rani-orange/10 border border-rani-orange/30 text-rani-orange text-xs font-bold uppercase tracking-wider">Foco e Construção</span>
+                    </div>
+                </header>
+
+                <!-- FRASES -->
+                <div class="glass-panel p-5 rounded-xl border border-rani-orange w-full mb-6 bg-rani-bg/40">
+                    <p id="dynamic-quote" class="text-base text-rani-cream italic font-medium quote-visible text-center tracking-wide min-h-[1.5em]">"A organização é o primeiro passo para a liberdade."</p>
+                </div>
+
+                <!-- OBJETIVOS 2026 -->
+                <div class="glass-panel p-5 rounded-xl border border-rani-gold/30 w-full mb-8 bg-rani-gold/10">
+                    <h3 class="text-sm font-serif text-rani-cream mb-3 uppercase tracking-widest font-bold text-center">Objetivos 2026</h3>
+                    <div class="flex flex-col md:flex-row justify-center gap-4 text-center">
+                        <div class="bg-black/20 p-3 rounded-lg flex-1 border border-white/5 hover:border-rani-gold/50 transition-colors">
+                            <p class="text-white text-sm font-medium"><i class="fas fa-book-open text-rani-gold mr-2"></i>Obter mais conhecimento de Marketing de Conteúdo</p>
+                        </div>
+                        <div class="bg-black/20 p-3 rounded-lg flex-1 border border-white/5 hover:border-rani-gold/50 transition-colors">
+                            <p class="text-white text-sm font-medium"><i class="fas fa-coins text-rani-gold mr-2"></i>Ganhar dinheiro trabalhando com o digital</p>
+                        </div>
+                    </div>
+                    
+                    <!-- NEW GLOBAL PROGRESS BAR -->
+                    <div class="mt-6 border-t border-white/10 pt-4">
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="text-xs font-bold text-white uppercase tracking-widest">Progresso Anual Global</span>
+                            <span class="text-lg font-bold text-rani-orange" id="global-progress-text">0%</span>
+                        </div>
+                        <div class="w-full bg-black/30 h-3 rounded-full overflow-hidden border border-white/5 relative">
+                            <div id="global-progress-bar" class="bg-gradient-to-r from-rani-orange via-rani-gold to-white h-full w-[0%] transition-all duration-1000 shadow-[0_0_15px_rgba(255,159,41,0.4)]">
+                                <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Financeiro -->
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group border-l-4 border-l-rani-orange flex flex-col justify-center min-h-[160px]">
+                        <div class="absolute top-4 right-4 opacity-10 text-4xl"><i class="fas fa-wallet"></i></div>
+                        <div class="text-xs font-bold text-rani-text/80 uppercase mb-3">Investido (Ano)</div>
+                        <div class="flex items-baseline gap-2 mb-3">
+                            <!-- Added ID here -->
+                            <span id="dash-invest-val" class="text-4xl font-serif text-white text-dash-invest">R$ 0,00</span>
+                            <span class="text-xs text-rani-text/60">/ 8k</span>
+                        </div>
+                        <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mb-1">
+                            <div class="bg-rani-orange h-full w-[0%] progress-bar-dash" id="dash-invest-bar"></div>
+                        </div>
+                        <p class="text-[10px] text-rani-orange text-right text-dash-invest-pct">0%</p>
+                    </div>
+                    <!-- Faturamento -->
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group border-l-4 border-l-rani-gold flex flex-col justify-center min-h-[160px]">
+                        <div class="absolute top-4 right-4 opacity-10 text-4xl"><i class="fas fa-chart-line"></i></div>
+                        <div class="text-xs font-bold text-rani-text/80 uppercase mb-3">Faturamento (Recebido)</div>
+                        <div class="flex items-baseline gap-2 mb-3">
+                            <span class="text-4xl font-serif text-white" id="dash-revenue-val">R$ 0,00</span>
+                            <span class="text-xs text-rani-text/60">/ 19.5k</span>
+                        </div>
+                        <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mb-1">
+                            <div class="bg-rani-gold h-full w-[0%] transition-all duration-700" id="dash-revenue-bar"></div>
+                        </div>
+                        <p class="text-[10px] text-rani-gold text-right" id="dash-revenue-pct">0%</p>
+                    </div>
+                    
+                    <!-- Dynamic Course Card (Replaces static UGC) -->
+                    <div id="dash-course-card" class="glass-panel p-6 rounded-2xl relative overflow-hidden group border-l-4 border-l-purple-500 flex flex-col justify-center min-h-[160px] transition-all duration-500">
+                        <div class="absolute top-4 right-4 opacity-10 text-4xl"><i class="fas fa-graduation-cap"></i></div>
+                        <div class="text-xs font-bold text-rani-text/80 uppercase mb-3 truncate" id="dash-course-title">Curso UGC</div>
+                        <div class="flex items-baseline gap-2 mb-3">
+                            <span class="text-4xl font-serif text-white" id="dash-course-remaining">68</span>
+                            <span class="text-xs text-rani-text/60">restantes</span>
+                        </div>
+                        <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mb-1">
+                            <div id="dash-course-bar" class="bg-purple-500 h-full w-[0%] transition-all duration-700"></div>
+                        </div>
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-[10px] text-white/50" id="dash-course-meta">Meta: 2/dia</span>
+                            <span class="text-[10px] text-rani-orange text-right" id="dash-course-pct">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Inglês -->
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group border-l-4 border-l-blue-400 flex flex-col justify-center min-h-[160px]">
+                        <div class="absolute top-4 right-4 opacity-10 text-4xl"><i class="fas fa-language"></i></div>
+                        <div class="text-xs font-bold text-rani-text/80 uppercase mb-3">Inglês ABA</div>
+                        <div class="flex items-baseline gap-2 mb-3">
+                            <span class="text-4xl font-serif text-white" id="dash-eng-lvl">-</span>
+                            <span class="text-xs text-rani-text/60" id="dash-eng-sub">Iniciante</span>
+                        </div>
+                        <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mb-1">
+                            <div class="bg-blue-400 h-full w-[0%] transition-all duration-700" id="dash-eng-bar"></div>
+                        </div>
+                        <p class="text-[10px] text-blue-300 text-right" id="dash-eng-next">Próximo: A1</p>
+                    </div>
+                </div>
+
+                <!-- Social Media -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                     <!-- Instagram -->
+                    <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between relative group border border-white/5 hover:border-pink-500/30 transition-all">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 rounded-lg text-white shadow-lg">
+                                <i class="fab fa-instagram text-xl"></i>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-white/80">Própria Vita</span>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-2xl font-serif text-white" id="dash-insta-val">367</span>
+                                <span class="text-xs text-white/50 mb-1">/ 1k</span>
+                            </div>
+                            <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                                <div id="dash-insta-bar" class="bg-gradient-to-r from-purple-500 to-pink-500 h-full w-[36%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- TikTok -->
+                    <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between relative group border border-white/5 hover:border-white/30 transition-all">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 bg-black border border-white/20 rounded-lg text-white shadow-lg">
+                                <i class="fab fa-tiktok text-xl"></i>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-white/80">TikTok</span>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-2xl font-serif text-white" id="dash-tiktok-val">245</span>
+                                <span class="text-xs text-white/50 mb-1">/ 1k</span>
+                            </div>
+                            <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                                <div id="dash-tiktok-bar" class="bg-white h-full w-[24%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- YouTube -->
+                    <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between relative group border border-white/5 hover:border-red-500/30 transition-all">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 bg-red-600 rounded-lg text-white shadow-lg">
+                                <i class="fab fa-youtube text-xl"></i>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-white/80">YouTube</span>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-2xl font-serif text-white" id="dash-yt-val">58</span>
+                                <span class="text-xs text-white/50 mb-1">/ 500</span>
+                            </div>
+                            <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                                <div id="dash-yt-bar" class="bg-red-500 h-full w-[11%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHECKLIST DIÁRIO -->
+                <div class="glass-panel p-8 rounded-2xl mb-8 border border-rani-orange/20">
+                    <h3 class="font-serif text-2xl text-white mb-6 flex items-center gap-3">
+                        <i class="fas fa-check-square text-rani-orange"></i> Checklist Diário
+                        <span id="daily-checklist-title" class="text-base text-rani-text/80 font-sans font-normal ml-2"></span>
+                    </h3>
+                    <div id="daily-checklist-container" class="space-y-3"></div>
+                </div>
+            </section>
+
+             <!-- Agenda Removed -->
+
+            <!-- ===================== 3. PESSOAL ===================== -->
+            <!-- Unchanged Section Content -->
+            <section id="personal" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Autocuidado</h1>
+                    <p class="text-rani-text/80">Beleza e Bem-estar.</p>
+                </header>
+                <div class="space-y-8">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Saturday -->
+                        <div class="bg-rani-cream/10 border border-rani-cream/30 p-4 rounded-xl flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-rani-cream/20 flex items-center justify-center text-rani-cream">
+                                <i class="fas fa-couch"></i>
+                            </div>
+                            <div>
+                                <p class="text-rani-cream font-bold uppercase text-xs tracking-widest mb-1">Sábado</p>
+                                <p class="text-white/90 text-sm italic">Day Off</p>
+                            </div>
+                        </div>
+
+                        <!-- Sunday -->
+                        <div class="bg-pink-500/10 border border-pink-500/30 p-4 rounded-xl flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-300">
+                                <i class="fas fa-hand-sparkles"></i>
+                            </div>
+                            <div>
+                                <p class="text-pink-300 font-bold uppercase text-xs tracking-widest mb-1">Domingo</p>
+                                <p class="text-white/90 text-sm italic">Fazer unhas e renovar as energias.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CRONOGRAMA CAPILAR (Horizontal) -->
+                    <div class="glass-panel p-8 rounded-2xl border-t-4 border-pink-400">
+                        <h3 class="font-serif text-xl text-white mb-6 flex items-center gap-2">
+                            <i class="fas fa-spa text-pink-400"></i> Cronograma Capilar
+                        </h3>
+                        <div class="grid grid-cols-5 gap-4 text-center text-sm">
+                            <div class="text-rani-text/40 font-bold uppercase tracking-widest flex items-center justify-center">Semana</div>
+                            <div class="font-bold text-rani-orange flex items-center justify-center bg-white/5 rounded-lg">1</div>
+                            <div class="font-bold text-rani-orange flex items-center justify-center bg-white/5 rounded-lg">2</div>
+                            <div class="font-bold text-rani-orange flex items-center justify-center bg-white/5 rounded-lg">3</div>
+                            <div class="font-bold text-rani-orange flex items-center justify-center bg-white/5 rounded-lg">4</div>
+
+                            <!-- Seg -->
+                            <div class="text-rani-text/40 font-bold flex items-center justify-center">SEG</div>
+                            <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Hidratação</div>
+                            <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Nutrição</div>
+                            <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Hidratação</div>
+                            <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Hidratação</div>
+
+                            <!-- Qui -->
+                            <div class="text-rani-text/40 font-bold flex items-center justify-center">QUI</div>
+                            <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Nutrição</div>
+                            <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Hidratação</div>
+                            <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Nutrição</div>
+                            <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Nutrição</div>
+
+                            <!-- Dom -->
+                            <div class="text-rani-text/40 font-bold flex items-center justify-center">DOM</div>
+                            <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Reconstrução</div>
+                            <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Nutrição</div>
+                            <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Reconstrução</div>
+                            <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Hidratação</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- ===================== 10. SAÚDE (EDITED) ===================== -->
+             <section id="health" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Saúde e Bem-estar</h1>
+                    <p class="text-rani-text/80">Cronograma alimentar e acompanhamento médico.</p>
+                </header>
+            
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Column 1: Info & Checklist -->
+                    <div class="space-y-6 lg:col-span-1 flex flex-col h-full">
+                        
+                        <!-- Essential Note -->
+                        <div class="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl flex-shrink-0">
+                            <div class="flex items-center gap-2 mb-2 text-blue-300 font-bold uppercase text-xs tracking-widest">
+                                <i class="fas fa-info-circle"></i> Meta Diária
+                            </div>
+                            <p class="text-white/90 text-sm italic">"Tomar 2L de água dia, praticar exercícios diariamente e reduzir alimentos ácidos."</p>
+                        </div>
+
+                        <!-- Medical Checklist (Editable) -->
+                        <div class="glass-panel p-6 rounded-2xl flex-1 flex flex-col">
+                             <div class="flex flex-col gap-4 mb-4 flex-shrink-0">
+                                 <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                                     <h3 class="font-serif text-xl text-white">Checklist Médico</h3>
+                                     <div class="flex items-center gap-1">
+                                        <button id="med-nav-prev" onclick="window.prevMedicalMonth()" class="p-1 text-white/50 hover:text-white transition-colors"><i class="fas fa-chevron-left"></i></button>
+                                        <button id="med-nav-next" onclick="window.nextMedicalMonth()" class="p-1 text-white/50 hover:text-white transition-colors"><i class="fas fa-chevron-right"></i></button>
+                                     </div>
+                                 </div>
+                                 <div class="flex justify-end">
+                                     <button onclick="window.addMedicalMonth()" class="text-[10px] bg-rani-orange/20 text-rani-orange hover:bg-rani-orange hover:text-black px-3 py-1.5 rounded transition-colors uppercase font-bold tracking-wider flex items-center gap-2"><i class="fas fa-plus"></i> Novo Mês</button>
+                                 </div>
+                             </div>
+                             
+                             <div id="medical-checklist-container" class="min-h-[150px] flex-1 overflow-y-auto">
+                                <!-- Injected by JS -->
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Health AI Chat -->
+                    <div class="lg:col-span-2 glass-panel p-0 rounded-xl overflow-hidden flex flex-col h-[600px] border border-green-500/20">
+                        <div class="bg-green-900/30 p-4 border-b border-white/10 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white shadow-lg"><i class="fas fa-user-md"></i></div>
+                            <div>
+                                <h3 class="text-white text-sm font-bold">Nutri IA</h3>
+                                <p class="text-[10px] text-white/50">Especialista em Refluxo & Massa Muscular</p>
+                            </div>
+                        </div>
+                        <div id="health-chat-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-black/10">
+                            <div class="chat-bubble chat-ai">Olá! Sou especialista em dieta para Refluxo Laringofaríngeo e ganho de massa saudável. Precisa de sugestões de cardápio ou tem dúvidas sobre algum alimento?</div>
+                        </div>
+                        <div class="p-4 bg-black/20 border-t border-white/10 relative">
+                            <input type="text" id="health-chat-input" placeholder="Pergunte sobre alimentos..." class="w-full bg-rani-bg/50 border border-white/10 rounded-lg py-3 pl-4 pr-12 text-white text-sm focus:outline-none focus:border-green-500 transition-colors" onkeypress="window.handleHealthChatKey(event)">
+                            <button onclick="window.sendHealthMessage()" class="absolute right-6 top-5 text-green-500 hover:text-white transition-colors"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acidic Foods List (Horizontal & Editable) -->
+                <div class="glass-panel p-6 rounded-xl mt-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                        <h3 class="text-red-400 font-bold text-xs uppercase"><i class="fas fa-ban mr-1"></i> Evitar (Refluxo)</h3>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <input type="text" id="avoid-food-input" placeholder="Adicionar alimento..." class="bg-black/20 border border-white/10 rounded-lg px-3 py-1 text-white text-sm focus:outline-none focus:border-red-400 w-full md:w-48" onkeypress="if(event.key === 'Enter') window.addAvoidFood()">
+                            <button onclick="window.addAvoidFood()" class="bg-red-500/20 hover:bg-red-500/40 text-red-200 border border-red-500/30 rounded-lg px-3 py-1 transition-colors text-sm"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div id="avoid-foods-container" class="flex flex-wrap gap-2">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+             </section>
+
+             <!-- ===================== NEW TAB: RELACIONAMENTO ===================== -->
+             <section id="relationships" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Relacionamento</h1>
+                    <p class="text-rani-text/80">Cultivando harmonia e bons momentos.</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Card 1 -->
+                    <div class="glass-panel p-8 rounded-2xl text-center border-t-4 border-blue-300">
+                        <div class="w-16 h-16 mx-auto bg-blue-400/20 rounded-full flex items-center justify-center text-blue-300 text-2xl mb-4">
+                            <i class="fas fa-feather-alt"></i>
+                        </div>
+                        <h3 class="text-xl font-serif text-white mb-2">Paciência & Calma</h3>
+                        <p class="text-white/70 italic text-sm">"Respire fundo antes de reagir. Seja menos agressiva."</p>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="glass-panel p-8 rounded-2xl text-center border-t-4 border-yellow-400">
+                        <div class="w-16 h-16 mx-auto bg-yellow-400/20 rounded-full flex items-center justify-center text-yellow-300 text-2xl mb-4">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <h3 class="text-xl font-serif text-white mb-2">Positividade</h3>
+                        <p class="text-white/70 italic text-sm">"Sem reclamar. Foque nas coisas boas."</p>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="glass-panel p-8 rounded-2xl text-center border-t-4 border-pink-400">
+                        <div class="w-16 h-16 mx-auto bg-pink-400/20 rounded-full flex items-center justify-center text-pink-300 text-2xl mb-4">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3 class="text-xl font-serif text-white mb-2">Conexão</h3>
+                        <p class="text-white/70 italic text-sm">"Momentos de qualidade importam."</p>
+                    </div>
+                </div>
+
+                <!-- NEW NOTES BOX -->
+                <div class="mt-8 glass-panel p-6 rounded-2xl">
+                    <h3 class="font-serif text-xl text-white mb-4">Notas e Planos</h3>
+                    <textarea id="relationship-notes" class="w-full h-32 bg-black/20 border border-white/10 rounded-xl p-4 text-sm text-white/90 focus:outline-none focus:border-rani-orange transition-colors resize-none placeholder-white/30" placeholder="Escreva seus planos e anotações sobre relacionamento aqui..." oninput="window.saveRelationshipNotes(this.value)"></textarea>
+                </div>
+             </section>
+
+             <!-- ===================== 4. INGLÊS ===================== -->
+             <section id="english" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Fluência em Inglês</h1>
+                    <p class="text-rani-text/80">Meta C1 Business | Previsão: 5 Meses (Junho).</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Schedule Card -->
+                    <div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
+                        <div class="absolute -right-10 -top-10 text-9xl text-white/5 rotate-12"><i class="fas fa-clock"></i></div>
+                        <h3 class="font-serif text-2xl text-white mb-6">Rotina de Estudos (2h/dia)</h3>
+                        
+                        <div class="space-y-4 relative z-10">
+                            <div class="flex p-4 bg-white/5 rounded-xl border-l-4 border-blue-400 gap-4">
+                                <div class="bg-blue-400/20 w-12 h-12 rounded-full flex items-center justify-center text-blue-300"><i class="fas fa-book"></i></div>
+                                <div>
+                                    <span class="block font-bold text-white">Segunda a Quinta</span>
+                                    <span class="text-sm text-rani-text/70">Módulo ABA English (1 por dia)</span>
+                                </div>
+                            </div>
+
+                            <div class="flex p-4 bg-white/5 rounded-xl border-l-4 border-purple-400 gap-4">
+                                <div class="bg-purple-400/20 w-12 h-12 rounded-full flex items-center justify-center text-purple-300"><i class="fas fa-film"></i></div>
+                                <div>
+                                    <span class="block font-bold text-white">Sexta-feira</span>
+                                    <span class="text-sm text-rani-text/70">Inglês com Filmes</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 mt-8">
+                            <div class="text-center p-4 rounded-xl bg-rani-bg/40 border border-white/10">
+                                <p class="text-[10px] text-rani-orange uppercase font-bold">Semanal</p>
+                                <p class="text-white font-serif">Revisão</p>
+                            </div>
+                            <div class="text-center p-4 rounded-xl bg-rani-bg/40 border border-white/10">
+                                <p class="text-[10px] text-rani-orange uppercase font-bold">Quinzenal</p>
+                                <p class="text-white font-serif">Conversação</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Levels Tracker -->
+                    <div class="glass-panel p-8 rounded-2xl flex flex-col justify-center">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-serif text-2xl text-white">Progresso ABA</h3>
+                            <span id="eng-page-pct" class="text-2xl font-bold text-blue-400">0%</span>
+                        </div>
+
+                         <!-- Progress Bar in English Page -->
+                         <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden mb-6">
+                            <div id="eng-page-bar" class="bg-blue-400 h-full w-[0%] relative transition-all duration-700 shadow-[0_0_10px_rgba(96,165,250,0.5)]">
+                            </div>
+                        </div>
+                        
+                        <!-- Dynamic Levels Container - Compact Grid -->
+                        <div id="english-levels-container" class="grid grid-cols-2 gap-3">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+             </section>
+
+             <!-- ===================== 6. ESTUDOS (CURSOS) ===================== -->
+             <section id="studies" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6 flex flex-col md:flex-row justify-between md:items-end gap-4">
+                    <div>
+                        <h1 class="font-serif text-4xl text-white mb-2">Estudos e Desenvolvimento</h1>
+                        <p class="text-rani-text/80">Gerencie seus cursos e progresso.</p>
+                    </div>
+                    <button onclick="window.addCourse()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-6 rounded-xl transition-all shadow-lg flex items-center gap-2">
+                        <i class="fas fa-plus-circle"></i> Novo Curso
+                    </button>
+                </header>
+
+                <div id="courses-list-container" class="grid grid-cols-1 gap-8 max-w-3xl mx-auto">
+                    <!-- Dynamic Course Cards Injected Here -->
+                </div>
+             </section>
+
+             <!-- ===================== 5. CARREIRA E MÍDIAS SOCIAIS ===================== -->
+             <section id="career" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Vendas e Mídias Sociais</h1>
+                    <p class="text-rani-text/80">Prospecção e Criação.</p>
+                </header>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <!-- Column 1: Sales Machine + Specific Tasks -->
+                    <div class="glass-panel p-8 rounded-2xl lg:col-span-2 space-y-8">
+                        <!-- Máquina de Vendas -->
+                        <div>
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-serif text-2xl text-white">Máquina de Vendas</h3>
+                                <span class="bg-white/5 text-rani-text/60 px-3 py-1 rounded text-xs">Início: Fevereiro</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-4 text-center mb-6">
+                                <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                                    <p class="text-rani-orange font-black text-xl mb-1">SEG-TER</p>
+                                    <p class="text-xs text-white uppercase font-bold">Prospecção</p>
+                                    <p class="text-[10px] text-rani-text/80 mt-1">50 Leads/dia</p>
+                                </div>
+                                <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                                    <p class="text-blue-300 font-black text-xl mb-1">QUA</p>
+                                    <p class="text-xs text-white uppercase font-bold">Follow-Up</p>
+                                    <p class="text-[10px] text-rani-text/80 mt-1">Retorno</p>
+                                </div>
+                                <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                                    <p class="text-rani-cream font-black text-xl mb-1">QUI-SEX</p>
+                                    <p class="text-xs text-white uppercase font-bold">Listas</p>
+                                    <p class="text-[10px] text-rani-text/80 mt-1">50 Nomes/dia</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-rani-orange/10 border border-rani-orange/20 rounded-xl">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-rani-orange text-rani-bg flex items-center justify-center font-bold"><i class="fas fa-bullseye"></i></div>
+                                    <div>
+                                        <p class="text-xs text-rani-orange font-bold uppercase">Meta de Volume</p>
+                                        <p class="text-white font-serif">400 Leads por Mês</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[10px] text-rani-text/80">Verificação Diária:</p>
+                                    <p class="text-xs text-white">Vagas em Agências & Plataformas</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tarefas Específicas -->
+                        <div class="border-t border-white/10 pt-8">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-serif text-xl text-white">Tarefas Prioritárias</h3>
+                                <div class="flex gap-2">
+                                     <div class="flex items-center gap-1 bg-black/20 rounded-lg p-1">
+                                        <button id="task-nav-prev" onclick="window.prevTaskPage()" class="p-1.5 text-white/50 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"><i class="fas fa-chevron-left text-xs"></i></button>
+                                        <button id="task-nav-next" onclick="window.nextTaskPage()" class="p-1.5 text-white/50 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"><i class="fas fa-chevron-right text-xs"></i></button>
+                                     </div>
+                                     <button onclick="window.addPriorityTask()" class="text-[10px] bg-rani-orange/20 text-rani-orange hover:bg-rani-orange hover:text-black px-3 py-1 rounded transition-colors uppercase font-bold flex items-center"><i class="fas fa-plus mr-1"></i> Add</button>
+                                </div>
+                            </div>
+                            
+                            <div id="priority-tasks-container" class="space-y-4 min-h-[180px]">
+                                <!-- JS Injected -->
+                            </div>
+                            <div class="text-center text-[10px] text-white/30 mt-2 font-mono tracking-widest" id="task-pagination-info">
+                                <!-- Pagination Info -->
+                            </div>
+                        </div>
+
+                        <!-- Anotações -->
+                        <div class="mt-16">
+                            <label class="block text-xs text-rani-orange font-bold uppercase mb-2 tracking-widest">Anotações & Insights</label>
+                            <textarea class="w-full h-40 bg-black/20 border border-rani-orange rounded-xl p-4 text-sm text-white/80 focus:outline-none focus:bg-black/30 transition-colors resize-none" placeholder="Digite suas ideias aqui..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Social Media Goals & Frequency -->
+                    <div class="space-y-8">
+                        
+                        <!-- Metas de Seguidores (Interativo - INPUT DIRETO) -->
+                        <div class="glass-panel p-6 rounded-2xl">
+                            <h3 class="font-serif text-xl text-white mb-6">Metas de Seguidores</h3>
+                            
+                            <!-- Instagram -->
+                            <div class="mb-6">
+                                <div class="flex justify-between items-center mb-2">
+                                    <div class="flex items-center gap-2 text-sm text-white">
+                                        <i class="fab fa-instagram text-pink-400"></i> Instagram
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-black/20 rounded-lg px-2 py-1">
+                                        <input type="number" id="career-insta-input" value="367" oninput="window.syncSocials(this, 'instagram')" class="bg-transparent text-white text-xs font-mono w-16 text-center focus:outline-none">
+                                    </div>
+                                </div>
+                                <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                                    <div id="career-insta-bar" class="bg-gradient-to-r from-purple-500 to-pink-500 w-[36%] h-full rounded-full transition-all duration-500"></div>
+                                </div>
+                                <p class="text-[10px] text-right text-pink-400 font-bold mt-1" id="career-insta-pct">36% da meta (1k)</p>
+                            </div>
+
+                            <!-- TikTok -->
+                            <div class="mb-6">
+                                <div class="flex justify-between items-center mb-2">
+                                    <div class="flex items-center gap-2 text-sm text-white">
+                                        <i class="fab fa-tiktok text-white"></i> TikTok
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-black/20 rounded-lg px-2 py-1">
+                                        <input type="number" id="career-tiktok-input" value="245" oninput="window.syncSocials(this, 'tiktok')" class="bg-transparent text-white text-xs font-mono w-16 text-center focus:outline-none">
+                                    </div>
+                                </div>
+                                <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                                    <div id="career-tiktok-bar" class="bg-white w-[24%] h-full rounded-full transition-all duration-500"></div>
+                                </div>
+                                <p class="text-[10px] text-right text-white font-bold mt-1" id="career-tiktok-pct">24% da meta (1k)</p>
+                            </div>
+
+                            <!-- YouTube -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <div class="flex items-center gap-2 text-sm text-white">
+                                        <i class="fab fa-youtube text-red-500"></i> YouTube
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-black/20 rounded-lg px-2 py-1">
+                                        <input type="number" id="career-yt-input" value="58" oninput="window.syncSocials(this, 'youtube')" class="bg-transparent text-white text-xs font-mono w-16 text-center focus:outline-none">
+                                    </div>
+                                </div>
+                                <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                                    <div id="career-yt-bar" class="bg-red-500 w-[11%] h-full rounded-full transition-all duration-500"></div>
+                                </div>
+                                <p class="text-[10px] text-right text-red-400 font-bold mt-1" id="career-yt-pct">11% da meta (500)</p>
+                            </div>
+                        </div>
+
+                        <!-- Frequência de Conteúdo Curto (Insta/TikTok) -->
+                        <div class="glass-panel p-6 rounded-2xl">
+                            <h3 class="font-serif text-xl text-white mb-6">Frequência Curta (Insta/TikTok)</h3>
+                            
+                            <div class="space-y-6">
+                                <!-- Própria Vita -->
+                                <div>
+                                    <div class="flex justify-between text-sm text-white mb-2">
+                                        <span>Própria Vita</span>
+                                        <span class="text-rani-orange text-xs font-bold">1 vídeo/sem (Fev)</span>
+                                    </div>
+                                    <div class="w-full bg-white/10 h-1.5 rounded-full"><div class="bg-gradient-to-r from-purple-500 via-pink-500 to-white w-1/4 h-full rounded-full opacity-50"></div></div>
+                                </div>
+
+                                <!-- UGC -->
+                                <div>
+                                    <div class="flex justify-between text-sm text-white mb-2">
+                                        <span>UGC</span>
+                                        <span class="text-rani-orange text-xs font-bold">1 vídeo/sem (Fev)</span>
+                                    </div>
+                                    <div class="w-full bg-white/10 h-1.5 rounded-full"><div class="bg-gradient-to-r from-purple-500 via-pink-500 to-white w-1/4 h-full rounded-full opacity-50"></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Frequência Youtube (Original Layout + Shorts) -->
+                        <div class="glass-panel p-6 rounded-2xl">
+                            <h3 class="font-serif text-xl text-white mb-6">Frequência Youtube</h3>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="flex justify-between text-sm text-white mb-2">
+                                        <span>Youtube (Jan/Fev)</span>
+                                        <span class="text-rani-text/80">1 vídeo/sem</span>
+                                    </div>
+                                    <div class="w-full bg-white/10 h-1.5 rounded-full"><div class="bg-red-500 w-1/4 h-full rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm text-white mb-2">
+                                        <span>Youtube (Março+)</span>
+                                        <span class="text-rani-orange">2 vídeos/sem</span>
+                                    </div>
+                                    <div class="w-full bg-white/10 h-1.5 rounded-full"><div class="bg-red-500 w-1/2 h-full rounded-full"></div></div>
+                                </div>
+                                <!-- Shorts Added Here -->
+                                <div class="pt-2 border-t border-white/5 mt-2">
+                                    <div class="flex justify-between text-sm text-white mb-2">
+                                        <span>Shorts (Fev+)</span>
+                                        <span class="text-rani-orange text-xs font-bold">2 vídeos/sem</span>
+                                    </div>
+                                    <div class="w-full bg-white/10 h-1.5 rounded-full"><div class="bg-red-500 w-1/2 h-full rounded-full opacity-70"></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+             </section>
+
+            <!-- ===================== 7. FINANCEIRO ===================== -->
+            <section id="finance" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Controle Financeiro</h1>
+                    <p class="text-rani-text/80">Acompanhamento de aportes, faturamento e CRM.</p>
+                </header>
+
+                <!-- Top Goals Row (Clean Vertical Layout) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <!-- Investment Goal -->
+                    <div class="glass-panel p-8 rounded-2xl border-l-4 border-rani-orange flex flex-col h-full min-h-[280px]">
+                        <div>
+                            <h3 class="font-serif text-xl text-white opacity-80">Meta de Investimento 2026</h3>
+                            <div class="text-4xl font-serif text-white font-bold text-dash-invest tracking-tight mt-4 mb-2">R$ 0,00</div>
+                            <div class="text-sm text-rani-text/60">Meta Anual: <span class="font-bold text-white">R$ 8.000,00</span></div>
+                        </div>
+                        
+                        <div class="flex-grow"></div>
+
+                        <div class="mt-6">
+                             <div class="flex justify-between items-end mb-2">
+                                <span class="text-xs font-bold text-rani-orange uppercase tracking-widest">Progresso</span>
+                                <span class="text-lg font-bold text-rani-orange text-dash-invest-pct">0%</span>
+                            </div>
+                            <div class="w-full bg-black/30 h-4 rounded-full overflow-hidden border border-white/5 relative">
+                                <div class="bg-gradient-to-r from-rani-orange to-rani-gold h-full w-[0%] progress-bar-dash relative shadow-[0_0_20px_rgba(255,159,41,0.5)]">
+                                    <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-rani-bg/50 p-3 rounded-lg border border-white/10 mt-6 flex gap-3 items-center">
+                            <div class="relative flex-1">
+                                <span class="absolute left-3 top-2.5 text-rani-text/50 text-xs">R$</span>
+                                <input type="number" id="invest-input" placeholder="0,00" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 pl-8 pr-3 text-white focus:outline-none focus:border-rani-orange text-sm transition-colors">
+                            </div>
+                             <div class="flex gap-1">
+                                <button onclick="window.addInvestment(-1)" class="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg font-bold transition-all border border-white/10 text-sm" title="Subtrair">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <button onclick="window.addInvestment(1)" class="bg-rani-card hover:bg-rani-orange hover:text-black text-white px-3 py-2 rounded-lg font-bold transition-all border border-white/10 text-sm" title="Adicionar">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Goal -->
+                    <div class="glass-panel p-8 rounded-2xl border-l-4 border-rani-gold flex flex-col h-full min-h-[280px]">
+                        <div>
+                            <h3 class="font-serif text-xl text-white opacity-80">Meta de Faturamento 2026</h3>
+                            <div class="text-4xl font-serif text-white font-bold text-dash-revenue-received mt-4 mb-2">R$ 0,00</div>
+                             <div class="text-xs text-rani-text/50 mb-1.5 uppercase font-bold tracking-widest">Recebido</div>
+                            
+                            <div class="text-xs text-rani-gold mt-1 text-dash-revenue-forecast">Previsto: R$ 0,00</div>
+                            <div class="mt-2 text-sm text-rani-text/60">Meta Anual: <span class="font-bold text-white">R$ 19.500,00</span></div>
+                        </div>
+                        
+                        <div class="flex-grow"></div>
+
+                        <div class="mt-6">
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-xs font-bold text-rani-gold uppercase tracking-widest">Progresso (Recebido)</span>
+                                <span class="text-lg font-bold text-rani-gold text-dash-revenue-pct">0%</span>
+                            </div>
+                            <div class="w-full bg-black/30 h-4 rounded-full overflow-hidden border border-white/5 relative">
+                                <div class="bg-rani-gold h-full w-[0%] progress-bar-revenue relative shadow-[0_0_20px_rgba(212,175,55,0.5)]">
+                                    <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CRM Section -->
+                <div class="glass-panel p-8 rounded-2xl mb-8">
+                    <h3 class="font-serif text-2xl text-white mb-6">CRM e Lançamentos</h3>
+                    
+                    <!-- Input Form -->
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8 bg-white/5 p-6 rounded-xl border border-white/5">
+                        
+                        <!-- Row 1 -->
+                        <div class="md:col-span-2">
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Cliente</label>
+                            <input type="text" id="crm-client" placeholder="Nome do Cliente" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Tipo</label>
+                            <select id="crm-type" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm appearance-none">
+                                <option value="UGC Vídeo">UGC Vídeo</option>
+                                <option value="UGC Foto">UGC Foto</option>
+                                <option value="Publi">Publi</option>
+                                <option value="Collab">Collab</option>
+                                <option value="Pacote">Pacote</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Frequência</label>
+                            <select id="crm-freq" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm appearance-none" onchange="window.toggleDurationInput()">
+                                <option value="pontual">Pontual</option>
+                                <option value="recorrente">Recorrente (Mensal)</option>
+                                <option value="fixed">Recorrente (Contado)</option>
+                            </select>
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="md:col-span-2">
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Detalhes (Pacote/Info)</label>
+                            <input type="text" id="crm-details" placeholder="Ex: 5 fotos + 2 reels" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm">
+                        </div>
+                        
+                         <!-- Dynamic Duration Input -->
+                         <div id="crm-duration-container" class="hidden">
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Duração (Meses)</label>
+                            <input type="number" id="crm-duration" placeholder="Ex: 3" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Mês Início</label>
+                            <select id="crm-month" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm appearance-none">
+                                <option value="0">Janeiro</option>
+                                <option value="1">Fevereiro</option>
+                                <option value="2">Março</option>
+                                <option value="3">Abril</option>
+                                <option value="4">Maio</option>
+                                <option value="5">Junho</option>
+                                <option value="6">Julho</option>
+                                <option value="7">Agosto</option>
+                                <option value="8">Setembro</option>
+                                <option value="9">Outubro</option>
+                                <option value="10">Novembro</option>
+                                <option value="11">Dezembro</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Valor Total (R$)</label>
+                            <div class="flex gap-2">
+                                <input type="number" id="crm-value" placeholder="0.00" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm">
+                                <button onclick="window.saveCRMEntry()" id="crm-add-btn" class="bg-rani-orange text-rani-bg rounded-lg px-4 hover:bg-white transition-colors font-bold flex items-center justify-center min-w-[40px]">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- List -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-rani-text/80">
+                            <thead class="text-xs text-rani-text/40 uppercase border-b border-white/10">
+                                <tr>
+                                    <th class="pb-3 pl-4">Mês</th>
+                                    <th class="pb-3">Cliente</th>
+                                    <th class="pb-3">Tipo/Detalhes</th>
+                                    <th class="pb-3">Freq.</th>
+                                    <th class="pb-3 text-right pr-4">Valor</th>
+                                    <th class="pb-3 text-right pr-4">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crm-list-body">
+                                <!-- JS Injected -->
+                            </tbody>
+                        </table>
+                        <div id="crm-empty" class="text-center py-8 text-rani-text/80 text-xs italic">
+                            Nenhum lançamento ainda.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue Chart -->
+                <div class="glass-panel p-8 rounded-2xl">
+                    <h3 class="font-serif text-2xl text-rani-orange mb-8 text-center">Rampa de Aquisição de Clientes 2026</h3>
+                    <div class="h-64 flex items-end justify-between gap-2 px-4" id="ramp-chart-container">
+                        <!-- Bars injected by JS for dynamic control -->
+                    </div>
+                </div>
+             </section>
+
+             <!-- ===================== 8. RECEBIMENTOS ===================== -->
+             <section id="payments" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Recebimentos</h1>
+                    <p class="text-rani-text/80">Gestão mensal de recebíveis e entregas.</p>
+                </header>
+
+                <div class="glass-panel p-8 rounded-2xl">
+                    <div class="flex items-center gap-4 mb-6">
+                        <label class="text-sm font-bold text-rani-text/80 uppercase">Mês de Referência:</label>
+                        <select id="payments-month-select" onchange="window.renderPaymentsTable()" class="bg-black/20 border border-white/10 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-rani-orange text-sm">
+                            <option value="0">Janeiro</option>
+                            <option value="1">Fevereiro</option>
+                            <option value="2">Março</option>
+                            <option value="3">Abril</option>
+                            <option value="4">Maio</option>
+                            <option value="5">Junho</option>
+                            <option value="6">Julho</option>
+                            <option value="7">Agosto</option>
+                            <option value="8">Setembro</option>
+                            <option value="9">Outubro</option>
+                            <option value="10">Novembro</option>
+                            <option value="11">Dezembro</option>
+                        </select>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-rani-text/80">
+                            <thead class="text-xs text-rani-text/40 uppercase border-b border-white/10">
+                                <tr>
+                                    <th class="pb-3 pl-4">Cliente</th>
+                                    <th class="pb-3">Descrição/Qtd</th>
+                                    <th class="pb-3">Valor</th>
+                                    <th class="pb-3 text-center">Pago?</th>
+                                    <th class="pb-3 text-right pr-4">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payments-list-body"></tbody>
+                        </table>
+                         <div id="payments-empty" class="text-center py-8 text-rani-text/80 text-xs italic hidden">Nenhum pagamento previsto para este mês.</div>
+                    </div>
+                     <div class="mt-6 pt-4 border-t border-white/10 flex justify-end gap-6 text-sm">
+                        <div>Previsto: <span class="text-white font-bold" id="pay-total-forecast">R$ 0,00</span></div>
+                        <div>Recebido: <span class="text-rani-gold font-bold" id="pay-total-received">R$ 0,00</span></div>
+                    </div>
+                </div>
+             </section>
+
+             <!-- ===================== 9. ANOTAÇÕES ===================== -->
+             <section id="notes" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6 flex justify-between items-end">
+                    <div>
+                        <h1 class="font-serif text-4xl text-white mb-2">Anotações</h1>
+                        <p class="text-rani-text/80">Ideias, lembretes e insights rápidos.</p>
+                    </div>
+                    <button type="button" onclick="window.addNewNote()" class="bg-rani-orange hover:bg-white hover:text-rani-orange text-rani-bg font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Nova Nota
+                    </button>
+                </header>
+
+                <div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Notes injected by JS -->
+                </div>
+                 <div id="notes-empty" class="text-center py-20 text-rani-text/40 text-sm italic hidden">
+                    Nenhuma anotação ainda. Clique em "Nova Nota" para começar.
+                </div>
+             </section>
+
+             <!-- CUSTOM MODAL (Hidden by default) -->
+            <div id="custom-modal-overlay" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+                <div class="bg-[#4a542a] border border-rani-orange/30 p-8 rounded-2xl shadow-2xl w-96 max-w-[90%] transform scale-100 transition-transform">
+                    <h3 id="modal-title" class="text-xl font-serif text-rani-cream mb-4 font-bold">Confirmação</h3>
+                    <div id="modal-content" class="mb-6 text-sm text-white/90"></div>
+                    
+                    <!-- Dynamic Inputs Container -->
+                    <div id="modal-inputs" class="mb-6 hidden flex flex-col gap-3">
+                        <!-- Inputs injected via JS -->
+                    </div>
+
+                    <div class="flex justify-end gap-3">
+                        <button onclick="window.closeModal()" class="px-4 py-2 rounded-lg border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-colors text-sm">Cancelar</button>
+                        <button id="modal-confirm-btn" class="px-4 py-2 rounded-lg bg-rani-orange text-rani-bg font-bold hover:bg-white hover:text-rani-orange transition-colors text-sm">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+             
+             <!-- AI MENTOR SECTION -->
+             <section id="ai_mentor" class="tab-content hidden fade-in h-full flex flex-col">
+                <header class="mb-4 border-b border-white/10 pb-4 flex justify-between items-end">
+                    <div>
+                        <h1 class="font-serif text-4xl text-white mb-2">Mentoria IA</h1>
+                        <p class="text-rani-text/80">Seu assistente pessoal de produtividade e estratégia.</p>
+                    </div>
+                    <button onclick="document.getElementById('api-key-modal').classList.remove('hidden')" class="text-white/50 hover:text-white transition-colors p-2" title="Configurar API Key">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </header>
+
+                <div class="flex-1 glass-panel rounded-2xl p-6 flex flex-col h-[500px]">
+                    <div id="chat-messages" class="flex-1 overflow-y-auto mb-4 pr-2 space-y-4">
+                        <!-- Initial Message -->
+                        <div class="chat-bubble chat-ai">
+                            Olá, Rani! Sou seu mentor estratégico. Analisei seus dados:
+                            <br><br>
+                            • Investimento: <span id="ai-invest-display">R$ 0,00</span><br>
+                            • Faturamento: <span id="ai-revenue-display">R$ 0,00</span><br>
+                            • Curso UGC: <span id="ai-course-display">0%</span><br>
+                            <br>
+                            Como posso te ajudar hoje a alcançar seus objetivos?
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <input type="text" id="chat-input" placeholder="Digite sua pergunta..." class="w-full bg-black/20 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-white focus:outline-none focus:border-rani-orange transition-colors" onkeypress="window.handleChatKey(event)">
+                        <button onclick="window.sendMessage()" class="absolute right-2 top-2 bg-rani-orange text-rani-bg p-1.5 rounded-lg hover:bg-white hover:text-rani-orange transition-colors">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+             </section>
+
+            <!-- API KEY MODAL -->
+            <div id="api-key-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                <div class="bg-[#4a542a] border border-rani-orange p-8 rounded-2xl shadow-2xl w-96 max-w-[90%]">
+                    <h3 class="text-xl font-serif text-rani-cream mb-2 font-bold">Configurar IA</h3>
+                    <p class="text-xs text-white/70 mb-4">Insira sua chave de API do Google Gemini para ativar o mentor.</p>
+                    <input type="password" id="gemini-api-key-input" placeholder="Cole sua API Key aqui..." class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-rani-orange text-sm mb-4">
+                    <div class="flex justify-end gap-3">
+                        <button onclick="document.getElementById('api-key-modal').classList.add('hidden')" class="text-white/50 hover:text-white text-sm">Cancelar</button>
+                        <button onclick="window.saveApiKey()" class="bg-rani-orange text-rani-bg font-bold px-4 py-2 rounded-lg hover:bg-white transition-colors text-sm">Salvar</button>
+                    </div>
+                    <p class="text-[10px] text-white/30 mt-4 text-center">A chave é salva apenas no seu navegador.</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Global Assignment
+        window.switchTab = switchTab;
+        window.updateDate = updateDate;
+        window.addInvestment = addInvestment;
+        window.saveCRMEntry = saveCRMEntry;
+        window.editEntry = editEntry;
+        window.deleteEntry = deleteEntry;
+        window.toggleDurationInput = toggleDurationInput;
+        window.togglePayment = togglePayment;
+        window.editPayment = editPayment;
+        window.renderPaymentsTable = renderPaymentsTable;
+        window.addNewNote = addNewNote;
+        window.deleteNote = deleteNote;
+        window.saveNote = saveNote;
+        window.updateNoteText = updateNoteText;
+        window.registerClass = registerClass;
+        window.undoClass = undoClass;
+        window.syncSocials = syncSocials;
+        window.toggleEngLevel = toggleEngLevel;
+        window.updateProfileImage = updateProfileImage;
+        window.closeModal = closeModal;
+        window.saveApiKey = saveApiKey;
+        window.handleChatKey = handleChatKey;
+        window.sendMessage = sendMessage;
+        
+        // Health AI Exports
+        window.sendHealthMessage = sendHealthMessage;
+        window.handleHealthChatKey = handleHealthChatKey;
+        
+        // Health Edit Exports
+        window.addAvoidFood = addAvoidFood;
+        window.deleteAvoidFood = deleteAvoidFood;
+        window.addMedicalMonth = addMedicalMonth;
+        window.updateMedicalMonth = updateMedicalMonth;
+        window.addMedicalTask = addMedicalTask;
+        window.toggleMedicalTask = toggleMedicalTask;
+        window.deleteMedicalTask = deleteMedicalTask;
+        window.updateMedicalTaskText = updateMedicalTaskText;
+        window.deleteMedicalMonth = deleteMedicalMonth;
+        window.prevMedicalMonth = prevMedicalMonth;
+        window.nextMedicalMonth = nextMedicalMonth;
+
+        // Priority Tasks Exports
+        window.addPriorityTask = addPriorityTask;
+        window.deletePriorityTask = deletePriorityTask;
+        window.updatePriorityTask = updatePriorityTask;
+        window.togglePriorityTask = togglePriorityTask;
+        window.prevTaskPage = prevTaskPage;
+        window.nextTaskPage = nextTaskPage;
+
+        // Course Exports
+        window.addCourse = addCourse;
+        window.deleteCourse = deleteCourse;
+        window.updateCourse = updateCourse;
+        
+        // New Relationship Export
+        window.saveRelationshipNotes = saveRelationshipNotes;
+
+        // Modal State
+        let modalCallback = null;
+
+        function showConfirmModal(title, message, onConfirm) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-content').textContent = message;
+            document.getElementById('modal-inputs').innerHTML = '';
+            document.getElementById('modal-inputs').classList.add('hidden');
+            
+            const overlay = document.getElementById('custom-modal-overlay');
+            overlay.classList.remove('hidden');
+            
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            
+            newBtn.onclick = () => {
+                onConfirm();
+                closeModal();
+            };
+        }
+
+        function showEditPaymentModal(currentVal, currentDesc, onConfirm) {
+            document.getElementById('modal-title').textContent = "Editar Pagamento";
+            document.getElementById('modal-content').textContent = "Ajuste os valores para este mês específico:";
+            
+            const container = document.getElementById('modal-inputs');
+            container.innerHTML = `
+                <div>
+                    <label class="block text-xs text-white/60 mb-1">Valor (R$)</label>
+                    <input type="number" id="modal-val" value="${currentVal}" class="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-white/60 mb-1">Descrição</label>
+                    <input type="text" id="modal-desc" value="${currentDesc || ''}" class="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white">
+                </div>
+            `;
+            container.classList.remove('hidden');
+            
+            const overlay = document.getElementById('custom-modal-overlay');
+            overlay.classList.remove('hidden');
+            
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            
+            newBtn.onclick = () => {
+                const val = document.getElementById('modal-val').value;
+                const desc = document.getElementById('modal-desc').value;
+                onConfirm(val, desc);
+                closeModal();
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal-overlay').classList.add('hidden');
+        }
+
+        // Tab Logic
+        function switchTab(tabId) {
+            const selectedTab = document.getElementById(tabId);
+            if (!selectedTab) return; 
+
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('fade-in');
+            });
+            
+            selectedTab.classList.remove('hidden');
+            void selectedTab.offsetWidth; 
+            selectedTab.classList.add('fade-in');
+
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(btn => {
+                if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // --- DATE LOGIC ---
+        function updateDate() {
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            const today = new Date().toLocaleDateString('pt-BR', options);
+            const formattedDate = today.charAt(0).toUpperCase() + today.slice(1);
+            const dateHeader = document.getElementById('current-date-header');
+            if(dateHeader) dateHeader.textContent = formattedDate;
+        }
+
+        // --- GLOBAL PROGRESS LOGIC (NEW) ---
+        function updateGlobalProgress() {
+            // 1. Finance (Invest + Revenue)
+            const investPct = Math.min(totalInvested / 8000, 1);
+            let totalReceivedYear = 0;
+            for(let i=0; i<12; i++) {
+                const m = calculateMonthlyRevenue(i);
+                totalReceivedYear += m.received;
+            }
+            const revenuePct = Math.min(totalReceivedYear / 19500, 1);
+
+            // 2. English
+            // Note: englishLevels variable is accessible here because it's global
+            // Need to ensure englishLevels is defined before use
+            const englishPct = (typeof englishLevels !== 'undefined') ? englishLevels.filter(l => l.checked).length / englishLevels.length : 0;
+
+            // 3. Courses
+            let totalClasses = 0;
+            let doneClasses = 0;
+            if(raniCourses.length > 0) {
+                raniCourses.forEach(c => {
+                    totalClasses += c.totalClasses;
+                    doneClasses += c.classesDone;
+                });
+            }
+            const coursesPct = totalClasses > 0 ? (doneClasses / totalClasses) : 0;
+
+            // Average of 4 pillars: Invest, Revenue, English, Courses
+            const totalScore = (investPct + revenuePct + englishPct + coursesPct) / 4;
+            const finalPct = Math.round(totalScore * 100);
+
+            const bar = document.getElementById('global-progress-bar');
+            const text = document.getElementById('global-progress-text');
+            if(bar) bar.style.width = finalPct + '%';
+            if(text) text.textContent = finalPct + '%';
+        }
+        
+        // --- RELATIONSHIP NOTES LOGIC ---
+        function saveRelationshipNotes(val) {
+            localStorage.setItem('rani_relationship_notes', val);
+        }
+
+        // --- HEALTH SECTION LOGIC (NEW) ---
+        let avoidFoodsData = JSON.parse(localStorage.getItem('rani_avoid_foods')) || ["Café", "Chocolate", "Tomate", "Cítricos", "Frituras", "Refrigerante", "Pimenta", "Álcool"];
+        let medicalChecklistData = JSON.parse(localStorage.getItem('rani_medical_checklist')) || [
+            { id: 1, month: "Janeiro", colorClass: "text-rani-orange", tasks: [ {id: 101, text: "Exame de Sangue", checked: false}, {id: 102, text: "Marcar Endocrinologista", checked: false} ] },
+            { id: 2, month: "Fevereiro", colorClass: "text-rani-gold", tasks: [ {id: 201, text: "Retorno Psiquiatra", checked: false} ] }
+        ];
+        let currentMedicalMonthIndex = 0;
+
+        function renderAvoidFoods() {
+            localStorage.setItem('rani_avoid_foods', JSON.stringify(avoidFoodsData));
+            const container = document.getElementById('avoid-foods-container');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            avoidFoodsData.forEach((food, index) => {
+                container.innerHTML += `
+                    <span class="bg-red-500/10 text-red-200 text-xs px-2 py-1 rounded border border-red-500/20 flex items-center gap-2 group">
+                        ${food}
+                        <button onclick="window.deleteAvoidFood(${index})" class="text-red-400 hover:text-red-100 opacity-50 group-hover:opacity-100 transition-opacity"><i class="fas fa-times"></i></button>
+                    </span>
+                `;
+            });
+        }
+
+        function addAvoidFood() {
+            const input = document.getElementById('avoid-food-input');
+            const val = input.value.trim();
+            if(val) {
+                avoidFoodsData.push(val);
+                input.value = '';
+                renderAvoidFoods();
+            }
+        }
+
+        function deleteAvoidFood(index) {
+            avoidFoodsData.splice(index, 1);
+            renderAvoidFoods();
+        }
+
+        function renderMedicalChecklist() {
+            localStorage.setItem('rani_medical_checklist', JSON.stringify(medicalChecklistData));
+            const container = document.getElementById('medical-checklist-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            if (medicalChecklistData.length === 0) {
+                container.innerHTML = '<div class="text-center text-white/50 text-sm py-4">Nenhum mês registrado.</div>';
+                updateMedicalNavigation();
+                return;
+            }
+
+            // Ensure index is valid
+            if (currentMedicalMonthIndex >= medicalChecklistData.length) currentMedicalMonthIndex = medicalChecklistData.length - 1;
+            if (currentMedicalMonthIndex < 0) currentMedicalMonthIndex = 0;
+
+            const monthBlock = medicalChecklistData[currentMedicalMonthIndex];
+            
+            let tasksHtml = '';
+            monthBlock.tasks.forEach(task => {
+                const checked = task.checked ? 'checked' : '';
+                tasksHtml += `
+                    <div class="group flex items-center justify-between bg-white/5 p-2 rounded-lg hover:bg-white/10 transition-colors mb-2">
+                        <div class="flex items-center gap-3 flex-grow">
+                            <label class="custom-checkbox cursor-pointer flex items-center">
+                                <input type="checkbox" class="hidden" ${checked} onchange="window.toggleMedicalTask(${monthBlock.id}, ${task.id})">
+                                <div class="w-5 h-5 border border-white/20 rounded flex items-center justify-center transition-all bg-black/20 flex-shrink-0"><svg class="w-3 h-3 text-black hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div>
+                            </label>
+                            <span class="text-sm text-white/90 w-full outline-none border-b border-transparent focus:border-white/20 pb-0.5" contenteditable="true" onblur="window.updateMedicalTaskText(${monthBlock.id}, ${task.id}, this.innerText)">${task.text}</span>
+                        </div>
+                        <button onclick="window.deleteMedicalTask(${monthBlock.id}, ${task.id})" class="text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2"><i class="fas fa-trash-alt text-xs"></i></button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="relative group/month animate-fade-in">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-lg font-serif font-bold ${monthBlock.colorClass || 'text-rani-orange'} outline-none cursor-text border-b border-transparent focus:border-white/20" contenteditable="true" onblur="window.updateMedicalMonth(${monthBlock.id}, this.innerText)">${monthBlock.month}</span>
+                        <div class="flex gap-2 opacity-0 group-hover/month:opacity-100 transition-opacity">
+                            <button onclick="window.addMedicalTask(${monthBlock.id})" class="text-xs bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded transition-colors" title="Adicionar Tarefa"><i class="fas fa-plus"></i></button>
+                            <button onclick="window.deleteMedicalMonth(${monthBlock.id})" class="text-xs bg-red-500/10 hover:bg-red-500/20 text-red-400 px-2 py-1 rounded transition-colors" title="Excluir Mês"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="space-y-2 min-h-[100px]">
+                        ${tasksHtml}
+                    </div>
+                     <div class="mt-4 text-center text-[10px] text-white/30 font-mono tracking-widest">
+                        ${currentMedicalMonthIndex + 1} / ${medicalChecklistData.length}
+                    </div>
+                </div>
+            `;
+            
+            updateMedicalNavigation();
+        }
+
+        function updateMedicalNavigation() {
+            const prevBtn = document.getElementById('med-nav-prev');
+            const nextBtn = document.getElementById('med-nav-next');
+            
+            if(prevBtn) {
+                prevBtn.disabled = currentMedicalMonthIndex <= 0;
+                prevBtn.className = `p-1 transition-colors ${currentMedicalMonthIndex <= 0 ? 'text-white/20 cursor-not-allowed' : 'text-rani-orange hover:text-white cursor-pointer'}`;
+            }
+            if(nextBtn) {
+                nextBtn.disabled = currentMedicalMonthIndex >= medicalChecklistData.length - 1;
+                nextBtn.className = `p-1 transition-colors ${currentMedicalMonthIndex >= medicalChecklistData.length - 1 ? 'text-white/20 cursor-not-allowed' : 'text-rani-orange hover:text-white cursor-pointer'}`;
+            }
+        }
+
+        function prevMedicalMonth() {
+            if(currentMedicalMonthIndex > 0) {
+                currentMedicalMonthIndex--;
+                renderMedicalChecklist();
+            }
+        }
+
+        function nextMedicalMonth() {
+            if(currentMedicalMonthIndex < medicalChecklistData.length - 1) {
+                currentMedicalMonthIndex++;
+                renderMedicalChecklist();
+            }
+        }
+
+        function addMedicalMonth() {
+            const newId = Date.now();
+            const colors = ["text-rani-orange", "text-rani-gold"];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            medicalChecklistData.push({
+                id: newId,
+                month: "Novo Mês",
+                colorClass: randomColor,
+                tasks: []
+            });
+            // Switch to the newly created month
+            currentMedicalMonthIndex = medicalChecklistData.length - 1;
+            renderMedicalChecklist();
+        }
+
+        function deleteMedicalMonth(id) {
+            showConfirmModal("Excluir Mês", "Deseja excluir este mês e todas as suas tarefas?", () => {
+                medicalChecklistData = medicalChecklistData.filter(m => m.id !== id);
+                renderMedicalChecklist();
+            });
+        }
+
+        function updateMedicalMonth(id, newName) {
+            const month = medicalChecklistData.find(m => m.id === id);
+            if(month) {
+                month.month = newName.trim();
+                localStorage.setItem('rani_medical_checklist', JSON.stringify(medicalChecklistData));
+            }
+        }
+
+        function addMedicalTask(monthId) {
+            const month = medicalChecklistData.find(m => m.id === monthId);
+            if(month) {
+                month.tasks.push({ id: Date.now(), text: "Nova tarefa", checked: false });
+                renderMedicalChecklist();
+            }
+        }
+
+        function toggleMedicalTask(monthId, taskId) {
+            const month = medicalChecklistData.find(m => m.id === monthId);
+            if(month) {
+                const task = month.tasks.find(t => t.id === taskId);
+                if(task) task.checked = !task.checked;
+                renderMedicalChecklist();
+            }
+        }
+
+        function deleteMedicalTask(monthId, taskId) {
+            const month = medicalChecklistData.find(m => m.id === monthId);
+            if(month) {
+                month.tasks = month.tasks.filter(t => t.id !== taskId);
+                renderMedicalChecklist();
+            }
+        }
+
+        function updateMedicalTaskText(monthId, taskId, text) {
+            const month = medicalChecklistData.find(m => m.id === monthId);
+            if(month) {
+                const task = month.tasks.find(t => t.id === taskId);
+                if(task) {
+                    task.text = text.trim();
+                    localStorage.setItem('rani_medical_checklist', JSON.stringify(medicalChecklistData));
+                }
+            }
+        }
+
+
+        // --- FINANCE & CRM LOGIC ---
+        let totalInvested = 0;
+        const INVEST_GOAL = 8000;
+        const REVENUE_GOAL_TOTAL = 19500;
+        
+        let crmEntries = []; 
+        let crmIdCounter = 1;
+        let editingId = null;
+        let paymentData = {}; 
+
+        const monthlyRevenueGoals = Array.from({length: 12}, (_, i) => (i + 1) * 250);
+        const monthNamesShort = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+
+        // Set default month in Payments tab
+        const payMonthSelect = document.getElementById('payments-month-select');
+        if(payMonthSelect) payMonthSelect.value = new Date().getMonth();
+
+        
+        function toggleDurationInput() {
+            const freq = document.getElementById('crm-freq').value;
+            const durContainer = document.getElementById('crm-duration-container');
+            if(freq === 'fixed') {
+                durContainer.classList.remove('hidden');
+            } else {
+                durContainer.classList.add('hidden');
+            }
+        }
+
+        function addInvestment(factor) {
+            const input = document.getElementById('invest-input');
+            const value = parseFloat(input.value);
+            if (value && value > 0) {
+                if(factor === -1) {
+                   totalInvested -= value;
+                   if(totalInvested < 0) totalInvested = 0;
+                } else {
+                   totalInvested += value; 
+                }
+                updateAllFinance();
+                input.value = '';
+            }
+        }
+
+        function saveCRMEntry() {
+            const client = document.getElementById('crm-client').value;
+            const type = document.getElementById('crm-type').value;
+            const details = document.getElementById('crm-details').value;
+            const freq = document.getElementById('crm-freq').value;
+            const monthIdx = parseInt(document.getElementById('crm-month').value);
+            const value = parseFloat(document.getElementById('crm-value').value);
+            let duration = null;
+
+            if(freq === 'fixed') {
+                duration = parseInt(document.getElementById('crm-duration').value);
+                if(!duration || duration < 1) duration = 1;
+            }
+
+            if(client && value >= 0) { 
+                if (editingId) {
+                    const index = crmEntries.findIndex(e => e.id === editingId);
+                    if (index !== -1) {
+                        crmEntries[index] = { ...crmEntries[index], client, type, details, freq, duration, monthIdx, value };
+                    }
+                    editingId = null;
+                    const btn = document.getElementById('crm-add-btn');
+                    btn.innerHTML = '<i class="fas fa-plus"></i>';
+                    btn.classList.remove('bg-blue-500');
+                    btn.classList.add('bg-rani-orange');
+                } else {
+                    crmEntries.push({ 
+                        id: crmIdCounter++, client, type, details, freq, duration, monthIdx, value, cancelledMonth: null 
+                    });
+                }
+
+                updateAllFinance();
+                renderCRMTable();
+                
+                document.getElementById('crm-client').value = '';
+                document.getElementById('crm-details').value = '';
+                document.getElementById('crm-value').value = '';
+                if(freq === 'fixed') document.getElementById('crm-duration').value = '';
+            }
+        }
+
+        function editEntry(id) {
+            const entry = crmEntries.find(e => e.id === id);
+            if(!entry) return;
+            document.getElementById('crm-client').value = entry.client;
+            document.getElementById('crm-type').value = entry.type;
+            document.getElementById('crm-details').value = entry.details || '';
+            document.getElementById('crm-freq').value = entry.freq;
+            document.getElementById('crm-month').value = entry.monthIdx;
+            document.getElementById('crm-value').value = entry.value;
+            toggleDurationInput(); 
+            if(entry.freq === 'fixed' && entry.duration) document.getElementById('crm-duration').value = entry.duration;
+            editingId = id;
+            const btn = document.getElementById('crm-add-btn');
+            btn.innerHTML = '<i class="fas fa-save"></i>';
+            btn.classList.remove('bg-rani-orange');
+            btn.classList.add('bg-blue-500');
+        }
+
+        function deleteEntry(id) {
+            showConfirmModal("Excluir Lançamento", "Tem certeza que deseja excluir este contrato/venda? Isso removerá todos os registros financeiros associados.", () => {
+                crmEntries = crmEntries.filter(e => e.id !== id);
+                if(editingId === id) {
+                    editingId = null;
+                    const btn = document.getElementById('crm-add-btn');
+                    btn.innerHTML = '<i class="fas fa-plus"></i>';
+                    btn.classList.remove('bg-blue-500');
+                    btn.classList.add('bg-rani-orange');
+                    document.getElementById('crm-client').value = '';
+                    document.getElementById('crm-value').value = '';
+                }
+                updateAllFinance();
+                renderCRMTable();
+            });
+        }
+
+        function renderCRMTable() {
+            const tbody = document.getElementById('crm-list-body');
+            const emptyMsg = document.getElementById('crm-empty');
+            
+            if (crmEntries.length > 0) {
+                emptyMsg.style.display = 'none';
+                tbody.innerHTML = '';
+                const sortedEntries = [...crmEntries].sort((a, b) => a.monthIdx - b.monthIdx);
+                sortedEntries.forEach(entry => {
+                    let freqBadge = '';
+                    if(entry.freq === 'recorrente') freqBadge = `<span class="bg-blue-500/20 text-blue-200 text-[10px] px-2 py-0.5 rounded border border-blue-500/30">Mensal</span>`;
+                    else if(entry.freq === 'fixed') freqBadge = `<span class="bg-purple-500/20 text-purple-200 text-[10px] px-2 py-0.5 rounded border border-purple-500/30">${entry.duration} Meses</span>`;
+                    else freqBadge = `<span class="bg-white/5 text-white/50 text-[10px] px-2 py-0.5 rounded">Pontual</span>`;
+                    
+                    const detailText = entry.details ? `<br><span class="text-[10px] text-white/40 italic">${entry.details}</span>` : '';
+                    const row = `
+                        <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                            <td class="py-3 pl-4 text-rani-orange font-bold text-xs">${monthNamesShort[entry.monthIdx]}</td>
+                            <td class="py-3 font-bold text-white">${entry.client}</td>
+                            <td class="py-3 text-xs opacity-70">${entry.type}${detailText}</td>
+                            <td class="py-3">${freqBadge}</td>
+                            <td class="py-3 text-right pr-4 font-mono text-rani-cream">R$ ${entry.value.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td class="py-3 text-right pr-4 flex justify-end gap-2">
+                                <button onclick="window.editEntry(${entry.id})" class="text-blue-400 hover:text-white text-xs"><i class="fas fa-pencil-alt"></i></button>
+                                <button onclick="window.deleteEntry(${entry.id})" class="text-white/30 hover:text-red-500 text-xs"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } else {
+                emptyMsg.style.display = 'block';
+                tbody.innerHTML = '';
+            }
+        }
+
+        // --- PAYMENT LOGIC ---
+        function getPaymentInfo(entryId, monthIdx) {
+            const key = `p_${entryId}_${monthIdx}`;
+            return paymentData[key] || { paid: false, overrideValue: null, overrideDetails: null };
+        }
+
+        function togglePayment(entryId, monthIdx) {
+            const key = `p_${entryId}_${monthIdx}`;
+            if(!paymentData[key]) paymentData[key] = { paid: false };
+            paymentData[key].paid = !paymentData[key].paid;
+            updateAllFinance();
+            renderPaymentsTable(); 
+        }
+        
+        function editPayment(entryId, monthIdx) {
+            const entry = crmEntries.find(e => e.id === entryId);
+            if(!entry) return;
+            const currentInfo = getPaymentInfo(entryId, monthIdx);
+            const currentVal = currentInfo.overrideValue !== null ? currentInfo.overrideValue : entry.value;
+            const currentDesc = currentInfo.overrideDetails || entry.details;
+
+            showEditPaymentModal(currentVal, currentDesc, (newValStr, newDesc) => {
+                const key = `p_${entryId}_${monthIdx}`;
+                if(!paymentData[key]) paymentData[key] = { paid: false };
+                
+                if(newValStr.trim() !== "") paymentData[key].overrideValue = parseFloat(newValStr);
+                else delete paymentData[key].overrideValue;
+                
+                if(newDesc !== null) paymentData[key].overrideDetails = newDesc;
+                
+                updateAllFinance();
+                renderPaymentsTable();
+            });
+        }
+
+        function renderPaymentsTable() {
+            const monthSelect = document.getElementById('payments-month-select');
+            if(!monthSelect) return;
+            
+            const monthIdx = parseInt(monthSelect.value);
+            const tbody = document.getElementById('payments-list-body');
+            const emptyMsg = document.getElementById('payments-empty');
+            tbody.innerHTML = '';
+            
+            let hasItems = false;
+            let totalForecast = 0;
+            let totalReceived = 0;
+
+            crmEntries.forEach(entry => {
+                let isActive = false;
+                if(entry.freq === 'pontual') { if(entry.monthIdx === monthIdx) isActive = true; }
+                else if(entry.freq === 'recorrente') { if(monthIdx >= entry.monthIdx) isActive = true; }
+                else if(entry.freq === 'fixed') { if(monthIdx >= entry.monthIdx && monthIdx < (entry.monthIdx + entry.duration)) isActive = true; }
+                
+                if(isActive && entry.cancelledMonth !== null && monthIdx > entry.cancelledMonth) {
+                    isActive = false;
+                }
+
+                if(isActive) {
+                    hasItems = true;
+                    const info = getPaymentInfo(entry.id, monthIdx);
+                    const displayValue = info.overrideValue !== null && info.overrideValue !== undefined ? info.overrideValue : entry.value;
+                    const displayDetails = info.overrideDetails || entry.details;
+                    
+                    totalForecast += displayValue;
+                    if(info.paid) totalReceived += displayValue;
+
+                    const checked = info.paid ? 'checked' : '';
+                    
+                    const row = `
+                        <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                            <td class="py-3 pl-4 font-bold text-white">${entry.client}</td>
+                            <td class="py-3 text-xs opacity-70">${entry.type}${displayDetails ? ' - ' + displayDetails : ''}</td>
+                            <td class="py-3 font-mono text-rani-cream">R$ ${displayValue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td class="py-3 text-center">
+                                <input type="checkbox" ${checked} onchange="togglePayment(${entry.id}, ${monthIdx})" class="w-4 h-4 accent-rani-orange cursor-pointer">
+                            </td>
+                            <td class="py-3 text-right pr-4">
+                                <button onclick="editPayment(${entry.id}, ${monthIdx})" class="text-blue-400 hover:text-white text-xs"><i class="fas fa-pencil-alt"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                }
+            });
+
+            if(!hasItems) emptyMsg.style.display = 'block';
+            else emptyMsg.style.display = 'none';
+
+            document.getElementById('pay-total-forecast').textContent = `R$ ${totalForecast.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('pay-total-received').textContent = `R$ ${totalReceived.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+
+
+        // --- CALCULATIONS ---
+        function calculateMonthlyRevenue(monthIndex) {
+            let forecast = 0;
+            let received = 0;
+            
+            crmEntries.forEach(entry => {
+                let isActive = false;
+                if(entry.freq === 'pontual') { if(entry.monthIdx === monthIndex) isActive = true; }
+                else if(entry.freq === 'recorrente') { if(monthIndex >= entry.monthIdx) isActive = true; }
+                else if(entry.freq === 'fixed') { if(monthIndex >= entry.monthIdx && monthIndex < (entry.monthIdx + entry.duration)) isActive = true; }
+                
+                if(isActive && entry.cancelledMonth !== null && monthIndex > entry.cancelledMonth) {
+                    isActive = false;
+                }
+
+                if(isActive) {
+                    const info = getPaymentInfo(entry.id, monthIndex);
+                    const val = info.overrideValue !== null && info.overrideValue !== undefined ? info.overrideValue : entry.value;
+                    forecast += val; 
+                    if(info.paid) received += val; 
+                }
+            });
+            return { forecast, received };
+        }
+
+        function updateAllFinance() {
+            // Investment
+            const investFmt = "R$ " + totalInvested.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            
+            // Fix: Check for element existence before setting textContent
+            // Use class selector since ID was missing in previous step but added back now.
+            // Using ID for robustness as per fix plan.
+            const dashInvestVal = document.getElementById('dash-invest-val');
+            if (dashInvestVal) {
+                dashInvestVal.textContent = investFmt;
+            } else {
+                 // Fallback to class selector if ID fails for any reason
+                 const els = document.querySelectorAll('.text-dash-invest');
+                 els.forEach(el => el.textContent = investFmt);
+            }
+
+            let investPct = Math.round((totalInvested / INVEST_GOAL) * 100);
+            document.querySelectorAll('.text-dash-invest-pct').forEach(el => el.textContent = investPct + '%');
+            document.querySelectorAll('.progress-bar-dash').forEach(el => el.style.width = Math.min(investPct, 100) + '%');
+
+            // Revenue
+            let totalForecastYear = 0;
+            let totalReceivedYear = 0;
+            for(let i=0; i<12; i++) {
+                const m = calculateMonthlyRevenue(i);
+                totalForecastYear += m.forecast;
+                totalReceivedYear += m.received;
+            }
+
+            const revFormatted = "R$ " + totalReceivedYear.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            
+            document.querySelectorAll('#dash-revenue-val, .text-dash-revenue, .text-dash-revenue-received').forEach(el => {
+                 el.textContent = revFormatted;
+            });
+            
+            const finRevForecast = document.querySelector('.text-dash-revenue-forecast');
+            if(finRevForecast) finRevForecast.textContent = `Previsto: R$ ${totalForecastYear.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+            let revPct = Math.round((totalReceivedYear / REVENUE_GOAL_TOTAL) * 100);
+            
+            document.querySelectorAll('#dash-revenue-pct, .text-dash-revenue-pct').forEach(el => el.textContent = revPct + '%');
+
+            const barWidth = Math.min(revPct, 100);
+            document.querySelectorAll('#dash-revenue-bar, .progress-bar-revenue').forEach(el => el.style.width = barWidth + '%');
+
+            renderRampChart();
+        }
+
+        function renderRampChart() {
+            const container = document.getElementById('ramp-chart-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            const forecasts = monthlyRevenueGoals.map((_, i) => calculateMonthlyRevenue(i).forecast);
+            
+            const maxValue = Math.max(3500, ...monthlyRevenueGoals, ...forecasts);
+
+            monthlyRevenueGoals.forEach((goal, i) => {
+                const actual = forecasts[i]; 
+                
+                const goalHeightPct = (goal / maxValue) * 90; 
+                const actualHeightPct = (actual / maxValue) * 90;
+                
+                const isMet = actual >= goal;
+                const barColor = isMet ? 'bg-rani-gold shadow-[0_0_15px_rgba(212,175,55,0.6)]' : 'bg-white/20';
+                const hoverColor = 'group-hover:bg-rani-orange';
+
+                let pctMet = 0;
+                if(goal > 0) pctMet = Math.round((actual / goal) * 100);
+
+                const html = `
+                    <div class="w-full flex flex-col items-center group h-full justify-end relative transition-all duration-300 hover:scale-105">
+                         <div class="absolute -top-12 text-xs font-bold text-rani-cream bg-black/80 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none shadow-xl border border-rani-gold/30">
+                            R$${actual.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} (${pctMet}%)
+                        </div>
+                        <div class="w-full relative h-full flex items-end justify-center">
+                             <div class="absolute bottom-0 w-full bg-white/5 rounded-t border-t border-white/20 z-0" style="height: ${goalHeightPct}%"></div>
+                             <div class="w-full ${barColor} ${hoverColor} transition-all duration-700 opacity-90 z-10 rounded-t relative" style="height: ${actualHeightPct}%"></div>
+                        </div>
+                        <div class="text-[10px] text-rani-cream mt-2 font-bold opacity-70 group-hover:opacity-100 transition-opacity">${monthNamesShort[i]}</div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        // --- NOTES LOGIC ---
+        let userNotes = JSON.parse(localStorage.getItem('rani_notes')) || [];
+
+        function addNewNote() {
+            const newNote = { id: Date.now(), text: "Nova anotação..." };
+            userNotes.push(newNote);
+            renderNotes();
+        }
+
+        function deleteNote(id) {
+            showConfirmModal("Excluir Anotação", "Deseja realmente apagar esta nota?", () => {
+                userNotes = userNotes.filter(n => n.id !== id);
+                renderNotes();
+            });
+        }
+        
+        function saveNote(id) {
+            localStorage.setItem('rani_notes', JSON.stringify(userNotes));
+            const btn = document.getElementById(`save-btn-${id}`);
+            if(btn) {
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                btn.classList.add('text-green-400');
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-save"></i>';
+                    btn.classList.remove('text-green-400');
+                }, 1000);
+            }
+        }
+
+        function renderNotes() {
+            localStorage.setItem('rani_notes', JSON.stringify(userNotes));
+            
+            const container = document.getElementById('notes-container');
+            const empty = document.getElementById('notes-empty');
+            
+            if (userNotes.length === 0) {
+                if(empty) empty.style.display = 'block';
+                if(container) container.innerHTML = '';
+            } else {
+                if(empty) empty.style.display = 'none';
+                if(container) {
+                    container.innerHTML = '';
+                    userNotes.forEach(note => {
+                        const html = `
+                            <div class="glass-panel p-6 rounded-2xl relative group min-h-[150px] flex flex-col transition-all hover:-translate-y-1">
+                                <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                     <button type="button" id="save-btn-${note.id}" onclick="window.saveNote(${note.id})" class="text-white/40 hover:text-white transition-colors" title="Salvar"><i class="fas fa-save"></i></button>
+                                     <button type="button" onclick="window.deleteNote(${note.id})" class="text-white/40 hover:text-red-500 transition-colors" title="Excluir"><i class="fas fa-trash"></i></button>
+                                </div>
+                                <div class="text-white/90 text-sm font-medium whitespace-pre-wrap flex-grow outline-none h-full w-full" contenteditable="true" oninput="updateNoteText(${note.id}, this)">${note.text}</div>
+                            </div>
+                        `;
+                        container.innerHTML += html;
+                    });
+                }
+            }
+        }
+
+        function updateNoteText(id, el) {
+            const note = userNotes.find(n => n.id === id);
+            if(note) {
+                note.text = el.innerText;
+                localStorage.setItem('rani_notes', JSON.stringify(userNotes));
+            }
+        }
+        
+        // --- PRIORITY TASKS LOGIC (NEW) ---
+        let priorityTasks = JSON.parse(localStorage.getItem('rani_priority_tasks')) || [
+            { id: 1, title: 'JAN DIA 05', text: 'Criar linha editorial Própria Vita', completed: false },
+            { id: 2, title: 'JAN DIA 06', text: 'Criar linha editorial UGC', completed: false }
+        ];
+        let currentTaskPage = 0;
+        const TASKS_PER_PAGE = 2;
+
+        function renderPriorityTasks() {
+            localStorage.setItem('rani_priority_tasks', JSON.stringify(priorityTasks));
+            const container = document.getElementById('priority-tasks-container');
+            const pageInfo = document.getElementById('task-pagination-info');
+            
+            if(!container) return;
+            container.innerHTML = '';
+
+            const totalPages = Math.ceil(priorityTasks.length / TASKS_PER_PAGE) || 1;
+            
+            // Adjust page index if out of bounds
+            if (currentTaskPage >= totalPages) currentTaskPage = totalPages - 1;
+            if (currentTaskPage < 0) currentTaskPage = 0;
+
+            const start = currentTaskPage * TASKS_PER_PAGE;
+            const end = start + TASKS_PER_PAGE;
+            const pageTasks = priorityTasks.slice(start, end);
+
+            if (pageTasks.length === 0) {
+                container.innerHTML = '<div class="text-center text-white/30 text-xs py-8">Nenhuma tarefa prioritária.</div>';
+            } else {
+                pageTasks.forEach(task => {
+                    const checked = task.completed ? 'checked' : '';
+                    const opacity = task.completed ? 'opacity-50' : 'opacity-100';
+                    const strike = task.completed ? 'line-through text-white/50' : 'text-white/90';
+                    
+                    container.innerHTML += `
+                        <div class="bg-white/5 p-4 rounded-xl border border-white/5 group relative transition-all hover:bg-white/10 ${opacity}">
+                             <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="window.deletePriorityTask(${task.id})" class="text-white/20 hover:text-red-500 transition-colors"><i class="fas fa-trash text-xs"></i></button>
+                            </div>
+                            <p class="text-xs text-rani-orange font-bold uppercase mb-2 outline-none border-b border-transparent focus:border-rani-orange inline-block cursor-text" contenteditable="true" onblur="window.updatePriorityTask(${task.id}, 'title', this.innerText)">${task.title}</p>
+                            <label class="custom-checkbox flex items-center justify-between cursor-pointer group/cb">
+                                <span class="text-sm ${strike} group-hover/cb:text-rani-cream transition-colors w-full outline-none border-b border-transparent focus:border-white/20 mr-2" contenteditable="true" onblur="window.updatePriorityTask(${task.id}, 'text', this.innerText)" onclick="event.preventDefault(); this.focus();">${task.text}</span>
+                                <input type="checkbox" class="hidden" ${checked} onchange="window.togglePriorityTask(${task.id})">
+                                <div class="w-5 h-5 border border-white/20 rounded flex items-center justify-center transition-all bg-black/20 flex-shrink-0"><svg class="w-3 h-3 text-black hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div>
+                            </label>
+                        </div>
+                    `;
+                });
+            }
+
+            if(pageInfo) pageInfo.textContent = `${currentTaskPage + 1} / ${totalPages}`;
+            
+            // Update buttons
+            const prevBtn = document.getElementById('task-nav-prev');
+            const nextBtn = document.getElementById('task-nav-next');
+            if(prevBtn) prevBtn.disabled = currentTaskPage === 0;
+            if(nextBtn) nextBtn.disabled = currentTaskPage >= totalPages - 1;
+            
+            // Update button styles based on disabled state
+             if(prevBtn) prevBtn.className = `p-1.5 transition-colors ${prevBtn.disabled ? 'text-white/20 cursor-not-allowed' : 'text-white/50 hover:text-white cursor-pointer'}`;
+             if(nextBtn) nextBtn.className = `p-1.5 transition-colors ${nextBtn.disabled ? 'text-white/20 cursor-not-allowed' : 'text-white/50 hover:text-white cursor-pointer'}`;
+        }
+
+        function prevTaskPage() {
+            if (currentTaskPage > 0) {
+                currentTaskPage--;
+                renderPriorityTasks();
+            }
+        }
+
+        function nextTaskPage() {
+            const totalPages = Math.ceil(priorityTasks.length / TASKS_PER_PAGE);
+            if (currentTaskPage < totalPages - 1) {
+                currentTaskPage++;
+                renderPriorityTasks();
+            }
+        }
+
+        function addPriorityTask() {
+            const newId = Date.now();
+            // Try to guess next date or use generic
+            const nextTitle = "NOVA DATA";
+            
+            priorityTasks.push({
+                id: newId,
+                title: nextTitle,
+                text: "Nova tarefa prioritária",
+                completed: false
+            });
+            
+            // Go to last page to see new task
+            const totalPages = Math.ceil(priorityTasks.length / TASKS_PER_PAGE);
+            currentTaskPage = totalPages - 1;
+            renderPriorityTasks();
+        }
+
+        function deletePriorityTask(id) {
+            showConfirmModal("Excluir Tarefa", "Deseja remover esta tarefa prioritária?", () => {
+                priorityTasks = priorityTasks.filter(t => t.id !== id);
+                renderPriorityTasks();
+            });
+        }
+
+        function updatePriorityTask(id, field, value) {
+            const task = priorityTasks.find(t => t.id === id);
+            if(task) {
+                task[field] = value.trim();
+                localStorage.setItem('rani_priority_tasks', JSON.stringify(priorityTasks));
+            }
+        }
+        
+        function togglePriorityTask(id) {
+            const task = priorityTasks.find(t => t.id === id);
+            if(task) {
+                task.completed = !task.completed;
+                renderPriorityTasks();
+            }
+        }
+
+        function addAvoidFood() {
+            const input = document.getElementById('avoid-food-input');
+            const val = input.value.trim();
+            if(val) {
+                avoidFoodsData.push(val);
+                input.value = '';
+                renderAvoidFoods();
+            }
+        }
+
+        function deleteAvoidFood(index) {
+            avoidFoodsData.splice(index, 1);
+            renderAvoidFoods();
+        }
+
+        // --- COURSES LOGIC (NEW) ---
+        let raniCourses = JSON.parse(localStorage.getItem('rani_courses')) || [
+            { id: 1, title: 'Curso UGC', totalClasses: 68, classesDone: 0, deadline: '2 Meses', goalCount: 2, goalType: 'dia' }
+        ];
+        
+        // Migration logic for older versions
+        if(localStorage.getItem('rani_classes_done') && raniCourses.length === 1 && raniCourses[0].classesDone === 0) {
+            raniCourses[0].classesDone = parseInt(localStorage.getItem('rani_classes_done'));
+            localStorage.removeItem('rani_classes_done'); 
+        }
+
+        function renderCourses() {
+            localStorage.setItem('rani_courses', JSON.stringify(raniCourses));
+            const container = document.getElementById('courses-list-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            raniCourses.forEach(course => {
+                const pct = Math.round((course.classesDone / course.totalClasses) * 100) || 0;
+                const remaining = course.totalClasses - course.classesDone;
+                
+                container.innerHTML += `
+                    <div class="glass-panel p-8 rounded-2xl relative group transition-all hover:border-white/20">
+                        <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="window.deleteCourse(${course.id})" class="text-white/30 hover:text-red-500 transition-colors"><i class="fas fa-trash"></i></button>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-8 items-center">
+                            <!-- Left: Stats -->
+                            <div class="text-center md:text-left flex-1 w-full">
+                                <h2 class="text-3xl font-serif text-white mb-2 outline-none border-b border-transparent focus:border-white/20 pb-1 inline-block" contenteditable="true" onblur="window.updateCourse(${course.id}, 'title', this.innerText)">${course.title}</h2>
+                                <div class="text-xs text-rani-text/50 mb-8 flex items-center justify-center md:justify-start gap-2">
+                                    <i class="far fa-clock text-rani-orange"></i>
+                                    <span>Prazo:</span>
+                                    <span class="text-white font-medium outline-none border-b border-transparent focus:border-rani-orange transition-colors" contenteditable="true" onblur="window.updateCourse(${course.id}, 'deadline', this.innerText)">${course.deadline}</span>
+                                </div>
+
+                                <!-- Premium Counter Design -->
+                                <div class="mb-8 flex flex-col md:flex-row items-center md:items-end gap-2">
+                                    <div class="text-7xl font-serif text-white leading-none tracking-tighter drop-shadow-lg">${remaining}</div>
+                                    <div class="text-sm text-rani-text/40 font-light uppercase tracking-widest mb-2 border-l border-rani-orange/50 pl-3">Aulas<br>Pendentes</div>
+                                </div>
+                                
+                                <div class="flex justify-center md:justify-start items-center gap-2 text-sm text-white/60 bg-white/5 inline-flex px-4 py-2 rounded-full border border-white/5">
+                                    <span class="uppercase text-[10px] font-bold tracking-wider text-rani-orange">Meta</span>
+                                    <input type="number" value="${course.goalCount}" onchange="window.updateCourse(${course.id}, 'goalCount', this.value)" class="w-8 bg-transparent text-center focus:text-white outline-none font-bold">
+                                    <span>aulas /</span>
+                                    <select onchange="window.updateCourse(${course.id}, 'goalType', this.value)" class="bg-transparent text-white outline-none focus:text-rani-orange cursor-pointer">
+                                        <option value="dia" ${course.goalType === 'dia' ? 'selected' : ''} class="bg-rani-bg">dia</option>
+                                        <option value="semana" ${course.goalType === 'semana' ? 'selected' : ''} class="bg-rani-bg">semana</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Right: Actions -->
+                            <div class="flex-1 w-full space-y-6">
+                                <div class="flex justify-between items-end border-b border-white/10 pb-2">
+                                    <span class="text-xs text-rani-text/40 uppercase tracking-widest font-bold">Progresso Total</span>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" value="${course.totalClasses}" onchange="window.updateCourse(${course.id}, 'totalClasses', this.value)" class="bg-transparent text-right text-white/50 text-sm font-bold w-12 outline-none focus:text-white hover:text-white transition-colors">
+                                        <span class="text-xs text-rani-text/30">Aulas</span>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="text-rani-cream font-bold">${course.classesDone} Feitas</span>
+                                        <span class="text-white/40">${pct}%</span>
+                                    </div>
+                                    <div class="w-full bg-black/20 h-3 rounded-full overflow-hidden border border-white/5">
+                                        <div class="bg-gradient-to-r from-purple-600 to-purple-400 h-full transition-all duration-1000 ease-out relative" style="width: ${pct}%">
+                                            <div class="absolute inset-0 bg-white/10"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-3 pt-2">
+                                    <button onclick="window.registerClass(${course.id})" class="flex-1 py-4 bg-rani-orange hover:bg-white hover:text-rani-orange text-rani-bg font-bold rounded-xl transition-all shadow-lg shadow-orange-500/10 flex items-center justify-center gap-2 group/btn">
+                                        <i class="fas fa-check-circle text-lg group-hover/btn:scale-110 transition-transform"></i> 
+                                        <span>Concluir Aula</span>
+                                    </button>
+                                    <button onclick="window.undoClass(${course.id})" class="px-5 py-4 bg-white/5 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 text-white/30 font-bold rounded-xl border border-white/10 transition-all" title="Desfazer">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function addCourse() {
+            const newId = Date.now();
+            raniCourses.push({
+                id: newId,
+                title: 'Novo Curso',
+                totalClasses: 10,
+                classesDone: 0,
+                deadline: 'Definir',
+                goalCount: 1,
+                goalType: 'dia'
+            });
+            renderCourses();
+        }
+
+        function deleteCourse(id) {
+            showConfirmModal("Excluir Curso", "Deseja remover este curso e todo o progresso?", () => {
+                raniCourses = raniCourses.filter(c => c.id !== id);
+                renderCourses();
+            });
+        }
+
+        function updateCourse(id, field, value) {
+            const course = raniCourses.find(c => c.id === id);
+            if(course) {
+                if(field === 'totalClasses' || field === 'goalCount') {
+                    course[field] = parseInt(value) || 0;
+                } else {
+                    course[field] = value;
+                }
+                renderCourses();
+            }
+        }
+
+        function registerClass(id) {
+            const course = raniCourses.find(c => c.id === id);
+            if(course && course.classesDone < course.totalClasses) {
+                course.classesDone++;
+                renderCourses();
+            }
+        }
+
+        function undoClass(id) {
+            const course = raniCourses.find(c => c.id === id);
+            if(course && course.classesDone > 0) {
+                course.classesDone--;
+                renderCourses();
+            }
+        }
+
+        // --- DASHBOARD CAROUSEL LOGIC ---
+        let currentDashCourseIndex = 0;
+        
+        function rotateDashCourse() {
+            if(!raniCourses || raniCourses.length === 0) {
+                // Show empty state if needed, or keeping generic text
+                document.getElementById('dash-course-title').textContent = "Sem Cursos";
+                document.getElementById('dash-course-remaining').textContent = "-";
+                document.getElementById('dash-course-bar').style.width = "0%";
+                document.getElementById('dash-course-pct').textContent = "0%";
+                return;
+            }
+
+            // Ensure index loop
+            currentDashCourseIndex = (currentDashCourseIndex + 1) % raniCourses.length;
+            updateDashboardCourseCard(currentDashCourseIndex);
+        }
+
+        function updateDashboardCourseCard(index) {
+            if(!raniCourses[index]) return;
+            const course = raniCourses[index];
+            const remaining = course.totalClasses - course.classesDone;
+            const pct = Math.round((course.classesDone / course.totalClasses) * 100) || 0;
+
+            const titleEl = document.getElementById('dash-course-title');
+            const remEl = document.getElementById('dash-course-remaining');
+            const barEl = document.getElementById('dash-course-bar');
+            const pctEl = document.getElementById('dash-course-pct');
+            const metaEl = document.getElementById('dash-course-meta');
+
+            if(titleEl) titleEl.textContent = course.title;
+            if(remEl) remEl.textContent = remaining;
+            if(barEl) barEl.style.width = pct + '%';
+            if(pctEl) pctEl.textContent = pct + '%';
+            if(metaEl) metaEl.textContent = `Meta: ${course.goalCount}/${course.goalType}`;
+        }
+
+        // --- SOCIAL STATS ---
+        const socialStats = { instagram: { current: 367, goal: 1000 }, tiktok: { current: 245, goal: 1000 }, youtube: { current: 58, goal: 500 } };
+        function syncSocials(el, p) { socialStats[p].current = parseInt(el.value)||0; updateSocialUI(); }
+        function updateSocialUI() {
+            // Fix ReferenceError by declaring vars
+            const iPct = Math.min(Math.round((socialStats.instagram.current / socialStats.instagram.goal) * 100), 100);
+            if(document.getElementById('career-insta-bar')) document.getElementById('career-insta-bar').style.width = iPct + '%';
+            if(document.getElementById('career-insta-pct')) document.getElementById('career-insta-pct').textContent = `${iPct}% da meta (1k)`;
+            
+            const dashInstaText = document.getElementById('dash-insta-val');
+            if(dashInstaText) dashInstaText.textContent = socialStats.instagram.current;
+            const dashInstaBar = document.getElementById('dash-insta-bar');
+            if(dashInstaBar) dashInstaBar.style.width = iPct + '%';
+
+            const tPct = Math.min(Math.round((socialStats.tiktok.current / socialStats.tiktok.goal) * 100), 100);
+            if(document.getElementById('career-tiktok-bar')) document.getElementById('career-tiktok-bar').style.width = tPct + '%';
+            if(document.getElementById('career-tiktok-pct')) document.getElementById('career-tiktok-pct').textContent = `${tPct}% da meta (1k)`;
+            
+            const dashTiktokText = document.getElementById('dash-tiktok-val');
+            if(dashTiktokText) dashTiktokText.textContent = socialStats.tiktok.current;
+            const dashTiktokBar = document.getElementById('dash-tiktok-bar');
+            if(dashTiktokBar) dashTiktokBar.style.width = tPct + '%';
+
+            const yPct = Math.min(Math.round((socialStats.youtube.current / socialStats.youtube.goal) * 100), 100);
+            if(document.getElementById('career-yt-bar')) document.getElementById('career-yt-bar').style.width = yPct + '%';
+            if(document.getElementById('career-yt-pct')) document.getElementById('career-yt-pct').textContent = `${yPct}% da meta (500)`;
+            
+            const dashYtText = document.getElementById('dash-yt-val');
+            if(dashYtText) dashYtText.textContent = socialStats.youtube.current;
+            const dashYtBar = document.getElementById('dash-yt-bar');
+            if(dashYtBar) dashYtBar.style.width = yPct + '%';
+        }
+
+        // Checklist & Quote Logic
+        function renderDailyChecklist() {
+            const dayIndex = new Date().getDay(); 
+            const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+            const taskConfig = { 
+                "Skincare": {color:"text-pink-400",icon:"fa-star"}, 
+                "Remédio Unha": {color:"text-blue-400",icon:"fa-pills"}, 
+                "Remédio Tireoide": {color:"text-blue-400",icon:"fa-pills"}, 
+                "Remédio Psiquiatra": {color:"text-blue-400",icon:"fa-pills"}, 
+                "Pilates": {color:"text-purple-400",icon:"fa-running"}, 
+                "Leitura + Diário": {color:"text-yellow-400",icon:"fa-book"}, 
+                "App Cíngulo + Diário": {color:"text-teal-400",icon:"fa-brain"}, 
+                "Leitura Bíblica": {color:"text-rani-gold",icon:"fa-bible"}, 
+                "Limpar Casa": {color:"text-cyan-400",icon:"fa-broom"}, 
+                "Fazer Unha": {color:"text-pink-300",icon:"fa-hand-sparkles"}, 
+                "Organizar Agenda": {color:"text-white",icon:"fa-calendar-check"}, 
+                "Remédios (U/T/P)": {color:"text-blue-400",icon:"fa-pills"},
+                "2l de água": {color:"text-cyan-300",icon:"fa-glass-water"},
+                "Diário": {color:"text-yellow-400",icon:"fa-pen"}
+            };
+            let tasks = [];
+            switch(dayIndex) {
+                case 1: case 3: tasks = ["Skincare", "2l de água", "Remédio Unha", "Remédio Tireoide", "Remédio Psiquiatra", "Pilates", "Leitura + Diário"]; break;
+                case 2: case 4: tasks = ["Skincare", "2l de água", "Remédio Unha", "Remédio Tireoide", "Remédio Psiquiatra", "Pilates", "App Cíngulo + Diário"]; break;
+                case 5: tasks = ["Skincare", "2l de água", "Remédio Unha", "Remédio Tireoide", "Remédio Psiquiatra", "Pilates", "Leitura Bíblica", "Limpar Casa", "Diário"]; break;
+                case 6: tasks = ["Skincare", "2l de água", "Remédios (U/T/P)", "Diário"]; break;
+                case 0: tasks = ["Skincare", "2l de água", "Remédios (U/T/P)", "Limpar Casa", "Fazer Unha", "Organizar Agenda", "Diário"]; break;
+            }
+            const container = document.getElementById('daily-checklist-container');
+            if(container) {
+                document.getElementById('daily-checklist-title').textContent = `• ${daysOfWeek[dayIndex]}`;
+                container.innerHTML = '';
+                tasks.forEach(t => {
+                    const c = taskConfig[t] || {color:"text-white",icon:"fa-check"};
+                    container.innerHTML += `<label class="custom-checkbox flex items-center justify-between cursor-pointer group bg-white/5 p-3 rounded-lg hover:bg-white/10 transition-colors border border-transparent hover:border-white/5"><span class="text-sm text-rani-text/90 group-hover:text-white transition-colors flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-sm ${c.color} border border-white/5"><i class="fas ${c.icon}"></i></div>${t}</span><input type="checkbox" class="hidden"><div class="w-6 h-6 border-2 border-rani-orange rounded flex items-center justify-center transition-all bg-black/20"><svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div></label>`;
+                });
+            }
+        }
+        
+        let quoteIdx = 0;
+        const quotes = ["A organização é o primeiro passo para a liberdade.", "Consistência vence intensidade.", "Faça o que precisa ser feito.", "Seu futuro é criado pelo que você faz hoje.", "Disciplina é liberdade.", "Cada pequeno passo conta."];
+        function rotateQuote() {
+            const el = document.getElementById('dynamic-quote');
+            if(el) {
+                el.classList.remove('quote-visible'); el.classList.add('quote-hidden');
+                setTimeout(() => { quoteIdx = (quoteIdx+1)%quotes.length; el.textContent = `"${quotes[quoteIdx]}"`; el.classList.remove('quote-hidden'); el.classList.add('quote-visible'); }, 800);
+            }
+        }
+
+        const englishLevels = [{id:'A1',sub:'Iniciante',checked:false},{id:'A2',sub:'Básico',checked:false},{id:'B1',sub:'Intermediário',checked:false},{id:'B2',sub:'Intermediário Alto',checked:false},{id:'C1',sub:'Avançado',checked:false},{id:'C1B',sub:'Profissional',checked:false}];
+        function toggleEngLevel(i) { englishLevels[i].checked = !englishLevels[i].checked; renderEnglishLevels(); updateEnglishDash(); }
+        function renderEnglishLevels() {
+            const c = document.getElementById('english-levels-container');
+            if(c) {
+                c.innerHTML = '';
+                englishLevels.forEach((l,i) => {
+                    const op = l.checked ? 'opacity-100 bg-blue-500/20' : 'opacity-60 bg-blue-500/5 hover:opacity-80';
+                    const ic = l.checked ? 'fas fa-check-circle text-blue-400' : 'far fa-circle text-blue-300/30';
+                    const st = l.checked ? '<span class="text-xs text-blue-400 font-bold ml-1">Concluído</span>' : '';
+                    const br = l.checked ? 'border-blue-500/50' : 'border-blue-500/20';
+                    c.innerHTML += `<div onclick="toggleEngLevel(${i})" class="group cursor-pointer rounded-xl p-3 border ${br} transition-all ${op}"><div class="flex justify-between items-center"><span class="text-sm font-bold text-white flex items-center gap-3"><i class="${ic} text-lg transition-colors"></i><div><span class="block">${l.id} ${st}</span><span class="text-xs font-normal text-rani-text/60">${l.sub}</span></div></span></div></div>`;
+                });
+            }
+        }
+        function updateEnglishDash() {
+            const pct = Math.round((englishLevels.filter(l=>l.checked).length / englishLevels.length)*100);
+            const last = englishLevels.findLastIndex(l=>l.checked);
+            const curr = last !== -1 ? englishLevels[last] : {id:'-',sub:'Iniciante'};
+            const next = last < englishLevels.length-1 ? englishLevels[last+1].id : 'Concluído';
+            
+            if(document.getElementById('dash-eng-lvl')) {
+                document.getElementById('dash-eng-lvl').textContent = curr.id;
+                document.getElementById('dash-eng-sub').textContent = curr.sub;
+                document.getElementById('dash-eng-bar').style.width = pct+'%';
+                document.getElementById('dash-eng-next').textContent = 'Próximo: ' + next;
+            }
+            if(document.getElementById('eng-page-pct')) {
+                document.getElementById('eng-page-pct').textContent = pct+'%';
+                document.getElementById('eng-page-bar').style.width = pct+'%';
+            }
+        }
+        
+        // --- GLOBAL PROGRESS LOGIC (NEW) ---
+        function updateGlobalProgress() {
+            // 1. Finance (Invest + Revenue)
+            const investPct = Math.min(totalInvested / 8000, 1);
+            let totalReceivedYear = 0;
+            for(let i=0; i<12; i++) {
+                const m = calculateMonthlyRevenue(i);
+                totalReceivedYear += m.received;
+            }
+            const revenuePct = Math.min(totalReceivedYear / 19500, 1);
+
+            // 2. English
+            // Note: englishLevels variable is accessible here because it's global
+            // Need to ensure englishLevels is defined before use
+            const englishPct = (typeof englishLevels !== 'undefined') ? englishLevels.filter(l => l.checked).length / englishLevels.length : 0;
+
+            // 3. Courses
+            let totalClasses = 0;
+            let doneClasses = 0;
+            if(raniCourses.length > 0) {
+                raniCourses.forEach(c => {
+                    totalClasses += c.totalClasses;
+                    doneClasses += c.classesDone;
+                });
+            }
+            const coursesPct = totalClasses > 0 ? (doneClasses / totalClasses) : 0;
+
+            // Average of 4 pillars: Invest, Revenue, English, Courses
+            const totalScore = (investPct + revenuePct + englishPct + coursesPct) / 4;
+            const finalPct = Math.round(totalScore * 100);
+
+            const bar = document.getElementById('global-progress-bar');
+            const text = document.getElementById('global-progress-text');
+            if(bar) bar.style.width = finalPct + '%';
+            if(text) text.textContent = finalPct + '%';
+        }
+
+        // --- RELATIONSHIP NOTES LOGIC ---
+        function saveRelationshipNotes(val) {
+            localStorage.setItem('rani_relationship_notes', val);
+        }
+
+        function updateProfileImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-img').src = e.target.result;
+                    localStorage.setItem('rani_profile_pic', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // AI Mentor Functionality
+        async function sendMessage() {
+            const inputField = document.getElementById('chat-input');
+            const message = inputField.value.trim();
+            if (!message) return;
+
+            // Display user message
+            addMessageToChat(message, 'user', 'chat-messages');
+            inputField.value = '';
+
+            // Loading indicator
+            const loadingId = addLoadingIndicator('chat-messages');
+
+            try {
+                // Gather context
+                const context = getPlannerContext();
+                
+                // Get API Key
+                const apiKey = localStorage.getItem('rani_ai_key');
+                if (!apiKey) {
+                    removeLoadingIndicator(loadingId);
+                    addMessageToChat("Por favor, configure sua chave de API nas configurações (ícone de engrenagem) para usar o mentor.", 'ai', 'chat-messages');
+                    return;
+                }
+
+                // Call Gemini API
+                const response = await callGeminiAPI(apiKey, message, context);
+                
+                removeLoadingIndicator(loadingId);
+                addMessageToChat(response, 'ai', 'chat-messages');
+
+            } catch (error) {
+                console.error(error);
+                removeLoadingIndicator(loadingId);
+                addMessageToChat("Desculpe, ocorreu um erro ao conectar com o mentor. Verifique sua chave de API.", 'ai', 'chat-messages');
+            }
+        }
+
+        // Health AI Functionality
+        async function sendHealthMessage() {
+            const inputField = document.getElementById('health-chat-input');
+            const message = inputField.value.trim();
+            if (!message) return;
+
+            addMessageToChat(message, 'user', 'health-chat-container');
+            inputField.value = '';
+
+            const loadingId = addLoadingIndicator('health-chat-container');
+
+            try {
+                const context = "Você é um nutricionista especialista em Refluxo Laringofaríngeo e ganho de massa muscular saudável. O usuário precisa evitar alimentos ácidos (tomate, café, cítricos, chocolate, frituras). Responda de forma direta, sugerindo substituições (ex: leite vegetal, frutas não cítricas) e hábitos saudáveis (não deitar após comer).";
+                
+                const apiKey = localStorage.getItem('rani_ai_key');
+                if (!apiKey) {
+                    removeLoadingIndicator(loadingId);
+                    addMessageToChat("Configure sua API Key primeiro.", 'ai', 'health-chat-container');
+                    return;
+                }
+
+                const response = await callGeminiAPI(apiKey, message, context);
+                
+                removeLoadingIndicator(loadingId);
+                addMessageToChat(response, 'ai', 'health-chat-container');
+
+            } catch (error) {
+                removeLoadingIndicator(loadingId);
+                addMessageToChat("Erro ao conectar.", 'ai', 'health-chat-container');
+            }
+        }
+
+        function handleHealthChatKey(e) {
+            if (e.key === 'Enter') sendHealthMessage();
+        }
+
+        // Unified Chat Helper
+        function addMessageToChat(text, sender, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return; // Guard clause
+            
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${sender === 'user' ? 'chat-user' : 'chat-ai'}`;
+            
+            if (sender === 'ai') {
+                bubble.innerHTML = marked.parse(text);
+            } else {
+                bubble.textContent = text;
+            }
+            
+            container.appendChild(bubble);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addLoadingIndicator(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return; // Guard clause
+
+            const id = 'loading-' + Date.now();
+            const bubble = document.createElement('div');
+            bubble.id = id;
+            bubble.className = `chat-bubble chat-ai flex gap-1 items-center`;
+            bubble.innerHTML = '<div class="w-2 h-2 bg-white/50 rounded-full typing-dot"></div><div class="w-2 h-2 bg-white/50 rounded-full typing-dot"></div><div class="w-2 h-2 bg-white/50 rounded-full typing-dot"></div>';
+            container.appendChild(bubble);
+            container.scrollTop = container.scrollHeight;
+            return id;
+        }
+
+        // Updated Remove Loading Indicator to search globally by ID (IDs are unique)
+        function removeLoadingIndicator(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('gemini-api-key-input').value;
+            if (key) {
+                localStorage.setItem('rani_ai_key', key);
+                document.getElementById('api-key-modal').classList.add('hidden');
+                alert("Chave de API salva com sucesso!");
+            }
+        }
+
+        function handleChatKey(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        function getPlannerContext() {
+            // Finance
+            const invest = document.querySelector('#dash-invest-val')?.textContent || "0";
+            const revenue = document.querySelector('#dash-revenue-val')?.textContent || "0";
+            
+            // Courses Context
+            const coursesSummary = raniCourses.map(c => `${c.title} (${c.classesDone}/${c.totalClasses})`).join(', ');
+
+            // English
+            const engLvl = document.getElementById('dash-eng-lvl')?.textContent || "-";
+
+            // Socials
+            const insta = socialStats.instagram.current;
+            const tiktok = socialStats.tiktok.current;
+            const youtube = socialStats.youtube.current;
+
+            return `
+                Contexto Atual do Planejador da Rani (2026):
+                - Investimento Anual Atual: ${invest} (Meta: 8k)
+                - Faturamento Anual Atual (Recebido): ${revenue} (Meta: 19.5k)
+                - Cursos: ${coursesSummary}.
+                - Inglês Nível Atual: ${engLvl}.
+                - Seguidores: Instagram (${insta}), TikTok (${tiktok}), YouTube (${youtube}).
+                
+                Atue como um mentor de produtividade e carreiras focado em UGC e influência digital. Seja direto, motivador e estratégico.
+            `;
+        }
+
+        async function callGeminiAPI(apiKey, userMessage, systemContext) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [
+                    {
+                        role: "user",
+                        parts: [{ text: systemContext + "\n\nUsuário: " + userMessage }]
+                    }
+                ]
+            };
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        // Initialize AI Display
+        function updateAIDisplay() {
+            const investDisplay = document.getElementById('ai-invest-display');
+            const revenueDisplay = document.getElementById('ai-revenue-display');
+            const courseDisplay = document.getElementById('ai-course-display');
+
+            // Null checks added
+            if (investDisplay) {
+                const investVal = document.getElementById('dash-invest-val');
+                investDisplay.textContent = investVal ? investVal.textContent : "R$ 0,00";
+            }
+            
+            if (revenueDisplay) {
+                 const revenueVal = document.getElementById('dash-revenue-val');
+                 revenueDisplay.textContent = revenueVal ? revenueVal.textContent : "R$ 0,00";
+            }
+            
+            // Display first active course pct
+            if(raniCourses.length > 0 && courseDisplay) {
+                const course = raniCourses[0];
+                const pct = Math.round((course.classesDone / course.totalClasses) * 100) || 0;
+                courseDisplay.textContent = `${pct}% (${course.title})`;
+            }
+        }
+
+        // Hook into updateAllFinance to update AI display too
+        const originalUpdateAllFinance = updateAllFinance;
+        updateAllFinance = function() {
+            originalUpdateAllFinance();
+            updateAIDisplay();
+            updateGlobalProgress(); // HOOK GLOBAL PROGRESS HERE
+        }
+        
+        // Also hook english and course updates to update global progress
+        const originalUpdateEnglishDash = updateEnglishDash;
+        updateEnglishDash = function() {
+            originalUpdateEnglishDash();
+            updateGlobalProgress();
+        }
+        
+        const originalUpdateCourse = updateCourse;
+        updateCourse = function(id, field, value) {
+            originalUpdateCourse(id, field, value);
+            updateGlobalProgress();
+        }
+        
+        const originalRegisterClass = registerClass;
+        registerClass = function(id) {
+            originalRegisterClass(id);
+            updateGlobalProgress();
+        }
+        
+        const originalUndoClass = undoClass;
+        undoClass = function(id) {
+            originalUndoClass(id);
+            updateGlobalProgress();
+        }
+
+        window.onload = function() {
+            updateDate();
+            renderEnglishLevels();
+            updateEnglishDash();
+            renderDailyChecklist(); 
+            updateSocialUI(); 
+            // updateStudyUI(); - Removed in favor of renderCourses
+            renderCourses();
+            updateDashboardCourseCard(0); // Init dash card
+            updateAllFinance(); 
+            renderNotes();
+            renderAvoidFoods(); 
+            renderMedicalChecklist(); 
+            renderPaymentsTable(); // Added missing initialization
+            renderPriorityTasks(); // Added missing initialization
+            
+            // Initial call for global progress
+            updateGlobalProgress();
+
+            const relNotes = localStorage.getItem('rani_relationship_notes');
+            if(relNotes) {
+                const el = document.getElementById('relationship-notes');
+                if(el) el.value = relNotes;
+            }
+            
+            const pic = localStorage.getItem('rani_profile_pic');
+            if(pic) document.getElementById('profile-img').src = pic;
+            
+            // Check for API Key
+            const apiKey = localStorage.getItem('rani_ai_key');
+            if(apiKey) document.getElementById('gemini-api-key-input').value = apiKey;
+
+            setInterval(rotateQuote, 5000);
+            
+            // Dashboard Course Carousel
+            setInterval(rotateDashCourse, 5000);
+        }
+    </script>
+</body>
+</html>
