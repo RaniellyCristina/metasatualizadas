@@ -1,0 +1,2852 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rani Strategic Planner | 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rani-bg': '#576332',        // Olive Deep
+                        'rani-sidebar': '#4a542a',   // Slightly darker for sidebar
+                        'rani-card': '#65723E',      // Lighter Olive for cards
+                        'rani-text': '#F6F4F1',      // Off-white text
+                        'rani-cream': '#FFF0BA',     // Cream accents (Gold-ish)
+                        'rani-orange': '#FF9F29',    // Vibrant Orange
+                        'rani-gold': '#D4AF37',      // True Gold
+                        'rani-light-orange': '#FFB055',
+                        'rani-salmon': '#FFDAB9'     // Soft Light Salmon
+                    },
+                    fontFamily: {
+                        sans: ['Lato', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --app-height: 100%;
+        }
+        html, body {
+            height: 100%;
+            height: -webkit-fill-available;
+            background-color: #576332;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        body {
+            color: #F6F4F1;
+            display: flex;
+            flex-direction: column;
+        }
+        @media (min-width: 768px) {
+            body { flex-direction: row; }
+        }
+        
+        /* Glassmorphism Logic */
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 240, 186, 0.15);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .glass-panel:hover {
+            background-color: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 240, 186, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Nav Item Styles */
+        .nav-item {
+            cursor: pointer;
+            transition: all 0.3s;
+            border-right: 3px solid transparent;
+            margin-bottom: 4px;
+        }
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #FFF0BA;
+        }
+        .nav-item.active {
+            background-color: rgba(255, 240, 186, 0.15);
+            border-right-color: #FF9F29; 
+            color: #FFF0BA;
+        }
+        .nav-item i {
+            width: 24px;
+            text-align: center;
+            transition: color 0.3s;
+        }
+        .nav-item.active i {
+            color: #FF9F29;
+        }
+
+        /* Checkbox Custom Style */
+        .custom-checkbox input:checked + div {
+            background-color: #FF9F29;
+            border-color: #FF9F29;
+        }
+        .custom-checkbox input:checked + div svg {
+            display: block;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #4a542a; }
+        ::-webkit-scrollbar-thumb { background: #FF9F29; border-radius: 3px; }
+
+        /* Input Number Styling */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .progress-bar-fill {
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Quote Animation */
+        #dynamic-quote {
+            transition: opacity 0.8s ease-in-out;
+        }
+        .quote-hidden {
+            opacity: 0;
+        }
+        .quote-visible {
+            opacity: 1;
+        }
+        
+        /* Modal Styles */
+        #custom-modal-overlay {
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Mobile specific fixes */
+        @media (max-width: 767px) {
+            main { height: calc(100% - 64px); }
+            /* Ajuste para impedir que a caixa de data estoure o container */
+            input[type="date"] {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans bg-rani-bg selection:bg-rani-orange selection:text-white relative">
+
+    <!-- CUSTOM MODAL (Hidden by default) -->
+    <div id="custom-modal-overlay" class="fixed inset-0 z-[100] hidden flex items-center justify-center">
+        <div class="bg-[#4a542a] border border-rani-orange/30 p-8 rounded-2xl shadow-2xl w-96 max-w-[90%] transform scale-100 transition-transform">
+            <h3 id="modal-title" class="text-xl font-serif text-rani-cream mb-4 font-bold">Confirmação</h3>
+            <div id="modal-content" class="mb-6 text-sm text-white/90"></div>
+            
+            <!-- Dynamic Inputs Container -->
+            <div id="modal-inputs" class="mb-6 hidden flex flex-col gap-3">
+                <!-- Inputs injected via JS -->
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button onclick="closeModal()" type="button" class="px-4 py-2 rounded-lg border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-colors text-sm">Cancelar</button>
+                <button id="modal-confirm-btn" type="button" class="px-4 py-2 rounded-lg bg-rani-orange text-rani-bg font-bold hover:bg-white hover:text-rani-orange transition-colors text-sm">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside id="sidebar" class="w-full md:w-64 bg-rani-sidebar hidden md:flex flex-col border-r border-white/10 shrink-0 z-[40] shadow-xl fixed md:static inset-0 h-full overflow-y-auto">
+        
+        <!-- Mobile Close Button -->
+        <div class="md:hidden p-4 flex justify-end">
+            <button onclick="toggleSidebar()" class="text-white text-xl"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Profile Header -->
+        <div class="p-8 pb-6 text-center border-b border-white/10">
+            <!-- Profile Image Container -->
+            <div class="relative w-24 h-24 mx-auto mb-4 group cursor-pointer" onclick="document.getElementById('profile-upload').click()">
+                <input type="file" id="profile-upload" class="hidden" accept="image/*" onchange="updateProfileImage(this)">
+                
+                <div class="absolute inset-0 rounded-full border-2 border-rani-orange opacity-70 group-hover:scale-110 transition-transform duration-500"></div>
+                <div class="w-full h-full rounded-full border-2 border-white/20 p-1 relative overflow-hidden">
+                    <img id="profile-img" src="https://ui-avatars.com/api/?name=Ranielly+Cristina&background=FFF0BA&color=576332&font-size=0.4" class="w-full h-full rounded-full object-cover shadow-lg">
+                    
+                    <!-- Overlay on Hover -->
+                    <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                        <i class="fas fa-camera text-white/80"></i>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="font-serif text-xl text-rani-cream tracking-wide font-bold">Ranielly Cristina</h2>
+            <p class="text-[10px] text-rani-text/50 uppercase tracking-widest mt-1 font-bold">UGC Creator e Influencer</p>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="flex-1 overflow-y-auto py-6 px-0 space-y-1">
+            <div class="px-6 pb-2 text-[10px] uppercase tracking-widest text-rani-text/40 font-bold">Principal</div>
+            
+            <div onclick="window.switchTab('dashboard')" class="nav-item active flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-th-large"></i>
+                Visão Geral
+            </div>
+
+            <div class="px-6 pb-2 pt-6 text-[10px] uppercase tracking-widest text-rani-text/40 font-bold">Estilo de Vida</div>
+
+            <div onclick="window.switchTab('personal')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-heart"></i>
+                Pessoal
+            </div>
+
+            <div onclick="window.switchTab('health')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-heartbeat"></i>
+                Saúde
+            </div>
+
+            <div onclick="window.switchTab('relationship')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-user-friends"></i>
+                Relacionamento
+            </div>
+
+            <div class="px-6 pb-2 pt-6 text-[10px] uppercase tracking-widest text-rani-text/40 font-bold">Estudos</div>
+
+            <div onclick="window.switchTab('english')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-language"></i>
+                Inglês
+            </div>
+            <div onclick="window.switchTab('studies')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-graduation-cap"></i>
+                Cursos
+            </div>
+
+            <div class="px-6 pb-2 pt-6 text-[10px] uppercase tracking-widest text-rani-text/40 font-bold">Profissional</div>
+
+            <div onclick="window.switchTab('career')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-briefcase"></i>
+                Vendas e Mídias
+            </div>
+            <div onclick="window.switchTab('finance')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-wallet"></i>
+                Financeiro
+            </div>
+            <div onclick="window.switchTab('payments')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-money-check-alt"></i>
+                Recebimentos
+            </div>
+            
+             <div class="px-6 pb-2 pt-6 text-[10px] uppercase tracking-widest text-rani-text/40 font-bold">Outros</div>
+             
+             <div onclick="window.switchTab('notes')" class="nav-item flex items-center gap-4 px-6 py-3 text-sm font-medium text-rani-text/80">
+                <i class="fas fa-sticky-note"></i>
+                Anotações
+            </div>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="p-6 border-t border-white/10">
+            <div class="bg-gradient-to-r from-rani-orange to-rani-gold p-4 rounded-xl shadow-lg shadow-black/20 text-center relative overflow-hidden group">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-white/20 rounded-full -mr-8 -mt-8 blur-xl"></div>
+                <p class="text-[10px] font-bold text-rani-bg uppercase mb-1">Status 2026</p>
+                <p class="text-2xl font-serif font-black text-rani-bg">Janeiro</p>
+                <div class="w-full bg-rani-bg/20 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div class="bg-rani-bg h-full w-[8%]"></div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 overflow-y-auto bg-rani-bg relative scroll-smooth z-10">
+        
+        <!-- Mobile Header -->
+        <div class="md:hidden p-4 flex items-center justify-between border-b border-white/10 sticky top-0 bg-rani-bg z-[30]">
+            <h1 class="font-serif text-xl text-rani-cream">Rani OS</h1>
+            <div class="text-rani-orange cursor-pointer p-2" onclick="toggleSidebar()"><i class="fas fa-bars text-xl"></i></div>
+        </div>
+
+        <div class="p-6 md:p-12 max-w-7xl mx-auto min-h-full">
+
+            <!-- ===================== 1. VISÃO GERAL ===================== -->
+            <section id="dashboard" class="tab-content fade-in">
+                
+                <header class="mb-10 flex flex-col md:flex-row justify-between md:items-end gap-4">
+                    <div>
+                        <h1 class="font-serif text-4xl text-white mb-2">Visão Geral</h1>
+                        <p class="text-rani-text/80">Seu centro de comando diário.</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-1">
+                        <span id="current-date-header" class="text-xs text-rani-text/90 uppercase tracking-widest font-bold"></span>
+                        <span class="px-4 py-2 rounded-full bg-rani-orange/10 border border-rani-orange/30 text-rani-orange text-xs font-bold uppercase tracking-wider">Foco e Construção</span>
+                    </div>
+                </header>
+
+                <!-- FRASES -->
+                <div class="glass-panel p-5 rounded-xl border border-rani-orange w-full mb-8 bg-rani-bg/40">
+                    <p id="dynamic-quote" class="text-base text-rani-cream italic font-medium quote-visible text-center tracking-wide min-h-[1.5em]">"A organização é o primeiro passo para a liberdade."</p>
+                </div>
+
+                <!-- OBJETIVOS 2026 (NOVO) -->
+                <div class="mb-10">
+                    <h3 class="font-serif text-xl text-white mb-4 pl-1 flex items-center gap-2 opacity-90">
+                        <i class="fas fa-flag text-rani-orange text-sm"></i> Objetivos 2026
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="glass-panel p-5 rounded-xl flex items-center gap-4 border-l-4 border-rani-orange group hover:bg-white/5 transition-colors">
+                            <div class="w-12 h-12 rounded-full bg-rani-orange/10 flex items-center justify-center text-rani-orange text-xl shadow-lg shadow-orange-500/10 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <span class="text-sm text-white/90 font-medium leading-tight">Obter mais conhecimento de Marketing</span>
+                        </div>
+                        
+                        <div class="glass-panel p-5 rounded-xl flex items-center gap-4 border-l-4 border-rani-gold group hover:bg-white/5 transition-colors">
+                            <div class="w-12 h-12 rounded-full bg-rani-gold/10 flex items-center justify-center text-rani-gold text-xl shadow-lg shadow-yellow-500/10 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-hand-holding-dollar"></i>
+                            </div>
+                            <span class="text-sm text-white/90 font-medium leading-tight">Ganhar dinheiro trabalhando com o digital</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Grid Reorganized (Center Content) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    
+                    <!-- 1. Financeiro (Investimento) -->
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group border-l-4 border-l-rani-orange flex flex-col justify-center min-h-[160px]">
+                        <div class="absolute top-4 right-4 opacity-10 text-4xl"><i class="fas fa-wallet"></i></div>
+                        <div class="text-xs font-bold text-rani-text/80 uppercase mb-3">Investido (Ano)</div>
+                        <div class="flex items-baseline gap-2 mb-3">
+                            <span class="text-4xl font-serif text-white text-dash-invest">R$ 0,00</span>
+                            <span class="text-xs text-rani-text/60">/ 8k</span>
+                        </div>
+                        <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mb-1">
+                            <div class="bg-rani-orange h-full w-[0%] progress-bar-dash" id="dash-invest-bar"></div>
+                        </div>
+                        <p class="text-[10px] text-rani-orange text-right text-dash-invest-pct">0%</p>
+                    </div>
+
+                    <!-- 2. Faturamento (RECEBIDO) - Standard Layout -->
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group border-l-4 border-l-rani-gold flex flex-col justify-center min-h-[160px]">
+                        <div class="absolute top-4 right-4 opacity-10 text-4xl"><i class="fas fa-chart-line"></i></div>
+                        <div class="text-xs font-bold text-rani-text/80 uppercase mb-3">Faturamento (Recebido)</div>
+                        <div class="flex items-baseline gap-2 mb-3">
+                            <span class="text-4xl font-serif text-white" id="dash-revenue-val">R$ 0,00</span>
+                            <span class="text-xs text-rani-text/60">/ 19.5k</span>
+                        </div>
+                        <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mb-1">
+                            <div class="bg-rani-gold h-full w-[0%] transition-all duration-700" id="dash-revenue-bar"></div>
+                        </div>
+                        <p class="text-[10px] text-rani-gold text-right" id="dash-revenue-pct">0%</p>
+                    </div>
+
+                    <!-- 3. Curso UGC (Restaurado) -->
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group border-l-4 border-l-purple-500 flex flex-col justify-center min-h-[160px]">
+                        <div class="absolute top-4 right-4 opacity-10 text-4xl"><i class="fas fa-graduation-cap"></i></div>
+                        <div id="dash-study-title" class="text-xs font-bold text-rani-text/80 uppercase mb-3">Curso UGC</div>
+                        <div class="flex items-baseline gap-2 mb-3">
+                            <span class="text-4xl font-serif text-white" id="dash-study-count">68</span>
+                            <span class="text-xs text-rani-text/60">restantes</span>
+                        </div>
+                        <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mb-1">
+                            <div id="dash-study-bar" class="bg-purple-500 h-full w-[0%] transition-all duration-700"></div>
+                        </div>
+                        <p class="text-[10px] text-rani-orange text-right" id="dash-study-pct">0%</p>
+                    </div>
+
+                    <!-- 4. Inglês -->
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group border-l-4 border-l-blue-400 flex flex-col justify-center min-h-[160px]">
+                        <div class="absolute top-4 right-4 opacity-10 text-4xl"><i class="fas fa-language"></i></div>
+                        <div class="text-xs font-bold text-rani-text/80 uppercase mb-3">Inglês ABA</div>
+                        <div class="flex items-baseline gap-2 mb-3">
+                            <span class="text-4xl font-serif text-white" id="dash-eng-lvl">-</span>
+                            <span class="text-xs text-rani-text/60" id="dash-eng-sub">Iniciante</span>
+                        </div>
+                        <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mb-1">
+                            <div class="bg-blue-400 h-full w-[0%] transition-all duration-700" id="dash-eng-bar"></div>
+                        </div>
+                        <p class="text-[10px] text-blue-300 text-right" id="dash-eng-next">Próximo: A1</p>
+                    </div>
+                </div>
+
+                <!-- Social Media Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Instagram -->
+                    <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between relative group border border-white/5 hover:border-pink-500/30 transition-all">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 rounded-lg text-white shadow-lg">
+                                <i class="fab fa-instagram text-xl"></i>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-white/80">Própria Vita</span>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-2xl font-serif text-white" id="dash-insta-val">367</span>
+                                <span class="text-xs text-white/50 mb-1">/ 1k</span>
+                            </div>
+                            <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                                <div id="dash-insta-bar" class="bg-gradient-to-r from-purple-500 to-pink-500 h-full w-[36%]"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TikTok -->
+                    <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between relative group border border-white/5 hover:border-white/30 transition-all">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 bg-black border border-white/20 rounded-lg text-white shadow-lg">
+                                <i class="fab fa-tiktok text-xl"></i>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-white/80">TikTok</span>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-2xl font-serif text-white" id="dash-tiktok-val">245</span>
+                                <span class="text-xs text-white/50 mb-1">/ 1k</span>
+                            </div>
+                            <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                                <div id="dash-tiktok-bar" class="bg-white h-full w-[24%]"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- YouTube -->
+                    <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between relative group border border-white/5 hover:border-red-500/30 transition-all">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 bg-red-600 rounded-lg text-white shadow-lg">
+                                <i class="fab fa-youtube text-xl"></i>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-white/80">YouTube</span>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-2xl font-serif text-white" id="dash-yt-val">58</span>
+                                <span class="text-xs text-white/50 mb-1">/ 500</span>
+                            </div>
+                            <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                                <div id="dash-yt-bar" class="bg-red-500 h-full w-[11%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHECKLIST DIÁRIO DINÂMICO -->
+                <div class="glass-panel p-8 rounded-2xl mb-8 border border-rani-orange/20">
+                    <h3 class="font-serif text-2xl text-white mb-6 flex items-center gap-3">
+                        <i class="fas fa-check-square text-rani-orange"></i> Checklist Diário
+                        <span id="daily-checklist-title" class="text-base text-rani-text/80 font-sans font-normal ml-2"></span>
+                    </h3>
+                    
+                    <!-- Container que será populado pelo JS -->
+                    <div id="daily-checklist-container" class="space-y-3">
+                        <!-- Itens do dia aparecerão aqui -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===================== SAÚDE E BEM-ESTAR ===================== -->
+            <section id="health" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Saúde e Bem-estar</h1>
+                    <p class="text-rani-text/80">Alimentação e acompanhamento médico.</p>
+                </header>
+
+                <div class="space-y-8">
+                    <!-- Meta Diária Card -->
+                    <div class="glass-panel p-8 rounded-2xl border-l-4 border-rani-orange">
+                        <h3 class="font-serif text-2xl text-white mb-4">Meta Diária</h3>
+                        <p class="text-rani-cream text-lg italic">"Tomar 2L de água dia, praticar exercícios diariamente e reduzir alimentos ácidos."</p>
+                    </div>
+
+                    <!-- Carrossel de Meses e Checklist -->
+                    <div class="glass-panel p-8 rounded-2xl relative">
+                        
+                        <!-- Header do Card: Título + Adicionar Mês -->
+                        <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+                            <div class="flex items-center gap-4">
+                                <h3 class="font-serif text-2xl text-white flex items-center gap-2">
+                                    <i class="fas fa-calendar-check text-rani-orange"></i> 
+                                    <span id="health-month-title">Janeiro</span>
+                                </h3>
+                                <button onclick="deleteHealthMonth()" class="w-8 h-8 rounded-full hover:bg-white/10 text-white/30 hover:text-red-400 transition-colors flex items-center justify-center group relative" title="Excluir Mês Atual">
+                                    <i class="fas fa-trash-alt text-sm"></i>
+                                </button>
+                            </div>
+
+                            <!-- Seletor de Novo Mês -->
+                            <div class="flex items-center gap-2 bg-black/20 p-1 rounded-lg border border-white/5">
+                                <select id="new-month-select" class="bg-transparent text-white text-xs p-2 outline-none cursor-pointer hover:bg-white/5 rounded">
+                                    <option value="" disabled selected>Adicionar Mês...</option>
+                                    <!-- Options populated by JS -->
+                                </select>
+                                <button onclick="addHealthMonth()" class="w-8 h-8 rounded bg-rani-orange text-rani-bg flex items-center justify-center hover:bg-white transition-colors">
+                                    <i class="fas fa-plus text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Navegação do Carrossel (Setas e Indicador) -->
+                        <div class="flex items-center justify-between mb-4 px-2">
+                            <button onclick="changeHealthSlide(-1)" id="btn-prev-health" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/50 hover:text-rani-orange hover:bg-white/10 transition-all disabled:opacity-20 disabled:cursor-not-allowed">
+                                <i class="fas fa-chevron-left text-xs"></i>
+                            </button>
+                            
+                            <span class="text-[10px] text-white/40 uppercase tracking-widest font-bold" id="health-slide-indicator">Página 1</span>
+
+                            <button onclick="changeHealthSlide(1)" id="btn-next-health" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/50 hover:text-rani-orange hover:bg-white/10 transition-all disabled:opacity-20 disabled:cursor-not-allowed">
+                                <i class="fas fa-chevron-right text-xs"></i>
+                            </button>
+                        </div>
+
+                        <!-- Container dos Itens (Checklist - Max 5) -->
+                        <div id="health-items-container" class="space-y-3 min-h-[220px] mb-6">
+                            <!-- Injetado via JS -->
+                        </div>
+
+                        <!-- Input para Novo Check -->
+                        <div class="pt-4 border-t border-white/10">
+                            <div class="flex gap-2">
+                                <input type="text" id="new-health-task" placeholder="Adicionar novo check..." class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm transition-colors">
+                                <button onclick="addHealthTask()" class="bg-rani-card hover:bg-rani-orange text-white rounded-lg px-4 transition-colors font-bold">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-white/30 mt-2 text-center italic">* Máximo de 5 itens por página. Itens extras criam novas páginas.</p>
+                        </div>
+                    </div>
+
+                    <!-- Alimentos para Evitar (Refluxo) -->
+                    <div class="glass-panel p-8 rounded-2xl">
+                        <h3 class="font-serif text-xl text-white mb-6 flex items-center gap-2">
+                            <i class="fas fa-ban text-red-400"></i> Alimentos para Evitar (Refluxo)
+                        </h3>
+                        
+                        <!-- Lista Horizontal -->
+                        <div id="reflux-list-container" class="flex flex-wrap gap-3 mb-6 min-h-[40px]">
+                            <!-- Itens injetados via JS -->
+                        </div>
+
+                        <!-- Input Adicionar -->
+                        <div class="flex gap-2 border-t border-white/10 pt-4">
+                            <input type="text" id="new-reflux-food" placeholder="Adicionar alimento..." class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm transition-colors">
+                            <button onclick="addRefluxFood()" class="bg-rani-card hover:bg-rani-orange text-white rounded-lg px-4 transition-colors font-bold whitespace-nowrap">
+                                <i class="fas fa-plus"></i> Adicionar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===================== 3. PESSOAL ===================== -->
+            <section id="personal" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Rotina Pessoal</h1>
+                    <p class="text-rani-text/80">Saúde, autocuidado e organização do lar.</p>
+                </header>
+
+                <div class="space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Group 1 -->
+                        <div class="glass-panel p-8 rounded-2xl">
+                            <div class="flex items-center gap-4 mb-6">
+                                <span class="bg-rani-orange text-rani-bg font-bold px-3 py-1 rounded text-xs tracking-widest">SEG • QUA • SEX</span>
+                                <div class="h-px bg-white/10 flex-1"></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-8">
+                                <div>
+                                    <h4 class="font-serif text-rani-cream text-lg mb-4">Manhã</h4>
+                                    <ul class="space-y-3 text-sm text-rani-text/80">
+                                        <li class="flex gap-3 items-center"><i class="fas fa-check text-rani-orange/70 text-xs"></i> Skincare</li>
+                                        <li class="flex gap-3 items-center"><i class="fas fa-pills text-rani-orange/70 text-xs"></i> Remédios</li>
+                                        <li class="flex gap-3 items-center"><i class="fas fa-running text-rani-orange/70 text-xs"></i> Pilates</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-serif text-rani-cream text-lg mb-4">Atividade</h4>
+                                    <ul class="space-y-3 text-sm text-rani-text/80">
+                                        <li class="flex gap-3 items-center"><i class="fas fa-book text-rani-orange/70 text-xs"></i> Leitura + Diário</li>
+                                        <li class="flex gap-3 items-center font-bold text-rani-orange"><i class="fas fa-bible text-xs"></i> Sexta: Leitura Bíblica</li>
+                                        <li class="flex gap-3 items-center pt-2 border-t border-white/10"><i class="fas fa-broom text-xs"></i> Sexta: Limpar Casa</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Group 2 -->
+                        <div class="glass-panel p-8 rounded-2xl opacity-90">
+                            <div class="flex items-center gap-4 mb-6">
+                                <span class="bg-rani-card border border-white/20 text-white font-bold px-3 py-1 rounded text-xs tracking-widest">TER • QUI</span>
+                                <div class="h-px bg-white/10 flex-1"></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-8">
+                                <div>
+                                    <h4 class="font-serif text-rani-cream text-lg mb-4">Manhã</h4>
+                                    <ul class="space-y-3 text-sm text-rani-text/80">
+                                        <li class="flex gap-3 items-center"><i class="fas fa-check text-rani-orange/70 text-xs"></i> Skincare</li>
+                                        <li class="flex gap-3 items-center"><i class="fas fa-check text-rani-orange/70 text-xs"></i> Remédios</li>
+                                        <li class="flex gap-3 items-center"><i class="fas fa-running text-rani-orange/70 text-xs"></i> Pilates</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-serif text-rani-cream text-lg mb-4">Mental</h4>
+                                    <ul class="space-y-3 text-sm text-rani-text/80">
+                                        <li class="flex gap-3 items-center"><i class="fas fa-brain text-rani-orange/70 text-xs"></i> App Cíngulo + Diário</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fim de Semana -->
+                    <div class="glass-panel p-8 rounded-2xl border-t-4 border-rani-orange bg-rani-cream/5">
+                        <div class="flex items-center gap-4 mb-6">
+                            <span class="bg-rani-gold text-rani-bg font-bold px-3 py-1 rounded text-xs tracking-widest uppercase">Fim de Semana</span>
+                            <div class="h-px bg-white/10 flex-1"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-8">
+                            <!-- Sábado -->
+                            <div>
+                                <h4 class="font-serif text-rani-cream text-lg mb-4">Sábado</h4>
+                                <ul class="space-y-3 text-sm text-rani-text/80">
+                                    <li class="flex gap-3 items-center font-bold text-rani-orange"><i class="fas fa-mug-hot text-xs"></i> DAY OFF</li>
+                                    <li class="flex gap-3 items-center"><i class="fas fa-check text-rani-orange/70 text-xs"></i> Skincare</li>
+                                    <li class="flex gap-3 items-center"><i class="fas fa-pills text-rani-orange/70 text-xs"></i> Remédios</li>
+                                    <li class="flex gap-3 items-center"><i class="fas fa-book text-rani-orange/70 text-xs"></i> Diário</li>
+                                </ul>
+                            </div>
+                            <!-- Domingo -->
+                            <div>
+                                <h4 class="font-serif text-rani-cream text-lg mb-4">Domingo</h4>
+                                <ul class="space-y-3 text-sm text-rani-text/80">
+                                    <li class="flex gap-3 items-center"><i class="fas fa-check text-rani-orange/70 text-xs"></i> Skincare</li>
+                                    <li class="flex gap-3 items-center"><i class="fas fa-pills text-rani-orange/70 text-xs"></i> Remédios</li>
+                                    <li class="flex gap-3 items-center"><i class="fas fa-book text-rani-orange/70 text-xs"></i> Diário</li>
+                                    <li class="flex gap-3 items-center pt-2 border-t border-white/10 font-bold text-white"><i class="fas fa-broom text-xs"></i> Limpeza da Casa</li>
+                                    <li class="flex gap-3 items-center font-bold text-white"><i class="fas fa-hand-sparkles text-xs"></i> Fazer Unha</li>
+                                    <li class="flex gap-3 items-center font-bold text-white"><i class="fas fa-calendar-alt text-xs"></i> Organizar Agenda</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CRONOGRAMA CAPILAR (Horizontal) -->
+                    <div class="glass-panel p-8 rounded-2xl border-t-4 border-pink-400">
+                        <h3 class="font-serif text-xl text-white mb-6 flex items-center gap-2">
+                            <i class="fas fa-spa text-pink-400"></i> Cronograma Capilar
+                        </h3>
+                        <div class="overflow-x-auto pb-4"> <!-- Wrapper -->
+                            <div class="grid grid-cols-5 gap-4 text-center text-sm min-w-[500px]"> <!-- Min width to prevent squashing -->
+                                <div class="text-rani-text/40 font-bold uppercase tracking-widest flex items-center justify-center">Semana</div>
+                                <div class="font-bold text-rani-orange flex items-center justify-center bg-white/5 rounded-lg">1</div>
+                                <div class="font-bold text-rani-orange flex items-center justify-center bg-white/5 rounded-lg">2</div>
+                                <div class="font-bold text-rani-orange flex items-center justify-center bg-white/5 rounded-lg">3</div>
+                                <div class="font-bold text-rani-orange flex items-center justify-center bg-white/5 rounded-lg">4</div>
+
+                                <!-- Seg -->
+                                <div class="text-rani-text/40 font-bold flex items-center justify-center">SEG</div>
+                                <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Hidratação</div>
+                                <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Nutrição</div>
+                                <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Hidratação</div>
+                                <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Hidratação</div>
+
+                                <!-- Qui -->
+                                <div class="text-rani-text/40 font-bold flex items-center justify-center">QUI</div>
+                                <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Nutrição</div>
+                                <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Hidratação</div>
+                                <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Nutrição</div>
+                                <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Nutrição</div>
+
+                                <!-- Dom -->
+                                <div class="text-rani-text/40 font-bold flex items-center justify-center">DOM</div>
+                                <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Reconstrução</div>
+                                <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Nutrição</div>
+                                <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Reconstrução</div>
+                                <div class="bg-white/5 rounded py-2 hover:bg-pink-500/20 transition-colors">Hidratação</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===================== RELACIONAMENTO (NOVA ABA) ===================== -->
+            <section id="relationship" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Relacionamento</h1>
+                    <p class="text-rani-text/80">Cultivando harmonia e bons momentos.</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Card 1 -->
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-blue-300 flex flex-col items-center text-center">
+                        <div class="w-12 h-12 rounded-full bg-blue-300/20 flex items-center justify-center text-blue-300 text-xl mb-4">
+                            <i class="fas fa-wind"></i>
+                        </div>
+                        <h3 class="font-serif text-xl text-white mb-2">Paciência & Calma</h3>
+                        <p class="text-sm text-white/70 italic">"Respire fundo antes de reagir. Seja menos agressiva."</p>
+                    </div>
+                    <!-- Card 2 -->
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-rani-gold flex flex-col items-center text-center">
+                        <div class="w-12 h-12 rounded-full bg-rani-gold/20 flex items-center justify-center text-rani-gold text-xl mb-4">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <h3 class="font-serif text-xl text-white mb-2">Positividade</h3>
+                        <p class="text-sm text-white/70 italic">"Sem reclamar. Foque nas coisas boas."</p>
+                    </div>
+                    <!-- Card 3 -->
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-pink-400 flex flex-col items-center text-center">
+                        <div class="w-12 h-12 rounded-full bg-pink-400/20 flex items-center justify-center text-pink-400 text-xl mb-4">
+                            <i class="fas fa-hand-holding-heart"></i>
+                        </div>
+                        <h3 class="font-serif text-xl text-white mb-2">Conexão</h3>
+                        <p class="text-sm text-white/70 italic">"Momentos de qualidade importam."</p>
+                    </div>
+                </div>
+
+                <!-- Notas e Planos -->
+                <div class="glass-panel p-8 rounded-2xl">
+                    <h3 class="font-serif text-2xl text-white mb-4 flex items-center gap-2">
+                        Notas e Planos
+                    </h3>
+                    <textarea id="relationship-notes" class="w-full h-64 bg-black/20 border border-white/10 rounded-xl p-4 text-white/90 focus:outline-none focus:border-rani-orange transition-colors resize-none" placeholder="Escreva seus planos, ideias ou reflexões sobre o relacionamento aqui..." oninput="saveRelationshipNotes(this)"></textarea>
+                </div>
+            </section>
+
+             <!-- ===================== 6. ESTUDOS (CURSOS) ===================== -->
+            <section id="studies" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6 flex flex-col md:flex-row justify-between md:items-end gap-4">
+                    <div>
+                        <h1 class="font-serif text-4xl text-white mb-2">Estudos e Desenvolvimento</h1>
+                        <p class="text-rani-text/80">Gerencie seus cursos e progresso.</p>
+                    </div>
+                    <button onclick="openCourseModal()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-purple-900/30">
+                        <i class="fas fa-plus"></i> Novo Curso
+                    </button>
+                </header>
+
+                <!-- Container de Cursos -->
+                <div id="courses-container" class="grid grid-cols-1 gap-8">
+                    <!-- Os cards dos cursos serão injetados aqui via JavaScript -->
+                </div>
+                
+                <div id="courses-empty" class="text-center py-20 text-rani-text/40 text-sm italic hidden">
+                    Nenhum curso cadastrado. Clique em "Novo Curso" para começar.
+                </div>
+            </section>
+
+             <!-- ===================== 4. INGLÊS ===================== -->
+             <section id="english" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Fluência em Inglês</h1>
+                    <p class="text-rani-text/80">Meta C1 Business | Previsão: 5 Meses (Junho).</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Schedule Card -->
+                    <div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
+                        <div class="absolute -right-10 -top-10 text-9xl text-white/5 rotate-12"><i class="fas fa-clock"></i></div>
+                        <h3 class="font-serif text-2xl text-white mb-6">Rotina de Estudos (2h/dia)</h3>
+                        
+                        <div class="space-y-4 relative z-10">
+                            <div class="flex p-4 bg-white/5 rounded-xl border-l-4 border-blue-400 gap-4">
+                                <div class="bg-blue-400/20 w-12 h-12 rounded-full flex items-center justify-center text-blue-300"><i class="fas fa-book"></i></div>
+                                <div>
+                                    <span class="block font-bold text-white">Segunda a Quinta</span>
+                                    <span class="text-sm text-rani-text/70">Módulo ABA English (1 por dia)</span>
+                                </div>
+                            </div>
+
+                            <div class="flex p-4 bg-white/5 rounded-xl border-l-4 border-purple-400 gap-4">
+                                <div class="bg-purple-400/20 w-12 h-12 rounded-full flex items-center justify-center text-purple-300"><i class="fas fa-film"></i></div>
+                                <div>
+                                    <span class="block font-bold text-white">Sexta-feira</span>
+                                    <span class="text-sm text-rani-text/70">Inglês com Filmes</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 mt-8">
+                            <div class="text-center p-4 rounded-xl bg-rani-bg/40 border border-white/10">
+                                <p class="text-[10px] text-rani-orange uppercase font-bold">Semanal</p>
+                                <p class="text-white font-serif">Revisão</p>
+                            </div>
+                            <div class="text-center p-4 rounded-xl bg-rani-bg/40 border border-white/10">
+                                <p class="text-[10px] text-rani-orange uppercase font-bold">Quinzenal</p>
+                                <p class="text-white font-serif">Conversação</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Levels Tracker -->
+                    <div class="glass-panel p-8 rounded-2xl flex flex-col justify-center">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-serif text-2xl text-white">Progresso ABA</h3>
+                            <span id="eng-page-pct" class="text-2xl font-bold text-blue-400">0%</span>
+                        </div>
+
+                         <!-- Progress Bar in English Page -->
+                         <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden mb-6">
+                            <div id="eng-page-bar" class="bg-blue-400 h-full w-[0%] relative transition-all duration-700 shadow-[0_0_10px_rgba(96,165,250,0.5)]">
+                            </div>
+                        </div>
+                        
+                        <!-- Dynamic Levels Container - Compact Grid -->
+                        <div id="english-levels-container" class="grid grid-cols-2 gap-3">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- ===================== 5. CARREIRA E MÍDIAS SOCIAIS ===================== -->
+            <section id="career" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Vendas e Mídias Sociais</h1>
+                    <p class="text-rani-text/80">Prospecção e Criação.</p>
+                </header>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <!-- Column 1: Sales Machine + Specific Tasks -->
+                    <div class="glass-panel p-8 rounded-2xl lg:col-span-2 space-y-8">
+                        <!-- Máquina de Vendas -->
+                        <div>
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-serif text-2xl text-white">Máquina de Vendas</h3>
+                                <span class="bg-white/5 text-rani-text/60 px-3 py-1 rounded text-xs">Início: Fevereiro</span>
+                            </div>
+                            
+                            <!-- Container dinâmico para os cards da Máquina de Vendas -->
+                            <!-- Correção Grid Mobile: grid-cols-1 no mobile -->
+                            <div id="sales-machine-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-6">
+                                <!-- Injetado via JS -->
+                            </div>
+
+                            <!-- Container dinâmico para Estatísticas da Máquina de Vendas -->
+                            <div id="sales-machine-stats" class="flex items-center justify-between p-4 bg-rani-orange/10 border border-rani-orange/20 rounded-xl">
+                                <!-- Injetado via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Tarefas Específicas -->
+                        <div class="border-t border-white/10 pt-8">
+                            <div class="flex justify-between items-end mb-4">
+                                <h3 class="font-serif text-xl text-white">Tarefas Prioritárias</h3>
+                                <!-- Navegação do Carrossel -->
+                                <div class="flex items-center gap-3 bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                                    <button onclick="changeCareerTaskSlide(-1)" id="btn-prev-career-task" class="text-white/50 hover:text-white disabled:opacity-20 transition-colors">
+                                        <i class="fas fa-chevron-left text-xs"></i>
+                                    </button>
+                                    <span id="career-task-indicator" class="text-[10px] font-mono text-rani-orange font-bold">1/1</span>
+                                    <button onclick="changeCareerTaskSlide(1)" id="btn-next-career-task" class="text-white/50 hover:text-white disabled:opacity-20 transition-colors">
+                                        <i class="fas fa-chevron-right text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Container Carrossel (2 itens por vez) -->
+                            <div id="career-tasks-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 min-h-[100px]">
+                                <!-- Itens injetados via JS -->
+                            </div>
+
+                            <!-- Input para Nova Tarefa -->
+                            <div class="flex flex-col md:flex-row gap-2 bg-white/5 p-3 rounded-xl border border-white/5">
+                                <div class="flex flex-col gap-1 flex-1">
+                                    <label class="text-[10px] text-white/40 uppercase font-bold ml-1">Tarefa</label>
+                                    <input type="text" id="new-career-task-text" placeholder="Descreva a tarefa..." class="bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white text-xs focus:outline-none focus:border-rani-orange w-full h-9">
+                                </div>
+                                <div class="flex flex-col gap-1 justify-end">
+                                    <button onclick="addCareerTask()" class="bg-rani-card hover:bg-rani-orange text-white rounded-lg px-4 py-2 transition-colors text-xs font-bold uppercase tracking-wider h-9 flex items-center justify-center">
+                                        <i class="fas fa-plus mr-1"></i> Add
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Anotações -->
+                        <div class="mt-16">
+                            <label class="block text-xs text-rani-orange font-bold uppercase mb-2 tracking-widest">Anotações & Insights</label>
+                            <textarea id="career-notes-input" oninput="saveCareerNotes(this)" class="w-full h-40 bg-black/20 border border-rani-orange rounded-xl p-4 text-sm text-white/80 focus:outline-none focus:bg-black/30 transition-colors resize-none" placeholder="Digite suas ideias aqui..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Social Media Goals & Frequency -->
+                    <div class="space-y-8">
+                        
+                        <!-- Metas de Seguidores (Interativo - INPUT DIRETO) -->
+                        <div class="glass-panel p-6 rounded-2xl">
+                            <h3 class="font-serif text-xl text-white mb-6">Metas de Seguidores</h3>
+                            
+                            <!-- Instagram -->
+                            <div class="mb-6">
+                                <div class="flex justify-between items-center mb-2">
+                                    <div class="flex items-center gap-2 text-sm text-white">
+                                        <i class="fab fa-instagram text-pink-400"></i> 
+                                        <span id="lbl-goals-insta" contenteditable="true" onblur="updateCareerTitle('goals_insta', this)" class="outline-none focus:border-b border-white/20 min-w-[50px]">Instagram</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-black/20 rounded-lg px-2 py-1">
+                                        <input type="number" id="career-insta-input" value="367" oninput="window.syncSocials(this, 'instagram')" class="bg-transparent text-white text-xs font-mono w-16 text-center focus:outline-none">
+                                    </div>
+                                </div>
+                                <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                                    <div id="career-insta-bar" class="bg-gradient-to-r from-purple-500 to-pink-500 w-[36%] h-full rounded-full transition-all duration-500"></div>
+                                </div>
+                                <p class="text-[10px] text-right text-pink-400 font-bold mt-1" id="career-insta-pct">36% da meta (1k)</p>
+                            </div>
+
+                            <!-- TikTok -->
+                            <div class="mb-6">
+                                <div class="flex justify-between items-center mb-2">
+                                    <div class="flex items-center gap-2 text-sm text-white">
+                                        <i class="fab fa-tiktok text-white"></i> 
+                                        <span id="lbl-goals-tiktok" contenteditable="true" onblur="updateCareerTitle('goals_tiktok', this)" class="outline-none focus:border-b border-white/20 min-w-[50px]">TikTok</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-black/20 rounded-lg px-2 py-1">
+                                        <input type="number" id="career-tiktok-input" value="245" oninput="window.syncSocials(this, 'tiktok')" class="bg-transparent text-white text-xs font-mono w-16 text-center focus:outline-none">
+                                    </div>
+                                </div>
+                                <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                                    <div id="career-tiktok-bar" class="bg-white w-[24%] h-full rounded-full transition-all duration-500"></div>
+                                </div>
+                                <p class="text-[10px] text-right text-white font-bold mt-1" id="career-tiktok-pct">24% da meta (1k)</p>
+                            </div>
+
+                            <!-- YouTube -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <div class="flex items-center gap-2 text-sm text-white">
+                                        <i class="fab fa-youtube text-red-500"></i> 
+                                        <span id="lbl-goals-yt" contenteditable="true" onblur="updateCareerTitle('goals_yt', this)" class="outline-none focus:border-b border-white/20 min-w-[50px]">YouTube</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-black/20 rounded-lg px-2 py-1">
+                                        <input type="number" id="career-yt-input" value="58" oninput="window.syncSocials(this, 'youtube')" class="bg-transparent text-white text-xs font-mono w-16 text-center focus:outline-none">
+                                    </div>
+                                </div>
+                                <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                                    <div id="career-yt-bar" class="bg-red-500 w-[11%] h-full rounded-full transition-all duration-500"></div>
+                                </div>
+                                <p class="text-[10px] text-right text-red-400 font-bold mt-1" id="career-yt-pct">11% da meta (500)</p>
+                            </div>
+                        </div>
+
+                        <!-- Frequência de Conteúdo Curto (Insta/TikTok) -->
+                        <div class="glass-panel p-6 rounded-2xl">
+                            <h3 id="lbl-freq-shorts" class="font-serif text-xl text-white mb-6 outline-none focus:border-b border-white/20 inline-block" contenteditable="true" onblur="updateCareerTitle('freq_shorts', this)">Frequência Curta (Insta/TikTok)</h3>
+                            
+                            <div id="freq-shorts-container" class="space-y-6">
+                                <!-- Injetado via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Frequência Youtube (Original Layout + Shorts) -->
+                        <div class="glass-panel p-6 rounded-2xl">
+                            <h3 id="lbl-freq-yt" class="font-serif text-xl text-white mb-6 outline-none focus:border-b border-white/20 inline-block" contenteditable="true" onblur="updateCareerTitle('freq_yt', this)">Frequência Youtube</h3>
+                            
+                            <div id="freq-youtube-container" class="space-y-6">
+                                <!-- Injetado via JS -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===================== 7. FINANCEIRO ===================== -->
+            <section id="finance" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Controle Financeiro</h1>
+                    <p class="text-rani-text/80">Acompanhamento de aportes, faturamento e CRM.</p>
+                </header>
+
+                <!-- Top Goals Row (Clean Vertical Layout) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <!-- Investment Goal -->
+                    <div class="glass-panel p-8 rounded-2xl border-l-4 border-rani-orange flex flex-col h-full min-h-[280px]">
+                        <div>
+                            <h3 class="font-serif text-xl text-white opacity-80">Meta de Investimento 2026</h3>
+                            <div class="text-4xl font-serif text-white font-bold text-dash-invest tracking-tight mt-4 mb-2">R$ 0,00</div>
+                            <div class="text-sm text-rani-text/60">Meta Anual: <span class="font-bold text-white">R$ 8.000,00</span></div>
+                        </div>
+                        
+                        <div class="flex-grow"></div>
+
+                        <div class="mt-6">
+                             <div class="flex justify-between items-end mb-2">
+                                <span class="text-xs font-bold text-rani-orange uppercase tracking-widest">Progresso</span>
+                                <span class="text-lg font-bold text-rani-orange text-dash-invest-pct">0%</span>
+                            </div>
+                            <div class="w-full bg-black/30 h-4 rounded-full overflow-hidden border border-white/5 relative">
+                                <div class="bg-gradient-to-r from-rani-orange to-rani-gold h-full w-[0%] progress-bar-dash relative shadow-[0_0_20px_rgba(255,159,41,0.5)]">
+                                    <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-rani-bg/50 p-3 rounded-lg border border-white/10 mt-6 flex gap-3 items-center">
+                            <div class="relative flex-1">
+                                <span class="absolute left-3 top-2.5 text-rani-text/50 text-xs">R$</span>
+                                <input type="number" id="invest-input" placeholder="0,00" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 pl-8 pr-3 text-white focus:outline-none focus:border-rani-orange text-sm transition-colors">
+                            </div>
+                             <div class="flex gap-1">
+                                <button onclick="window.addInvestment(-1)" class="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg font-bold transition-all border border-white/10 text-sm" title="Subtrair">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <button onclick="window.addInvestment(1)" class="bg-rani-card hover:bg-rani-orange hover:text-black text-white px-3 py-2 rounded-lg font-bold transition-all border border-white/10 text-sm" title="Adicionar">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Goal -->
+                    <div class="glass-panel p-8 rounded-2xl border-l-4 border-rani-gold flex flex-col h-full min-h-[280px]">
+                        <div>
+                            <h3 class="font-serif text-xl text-white opacity-80">Meta de Faturamento 2026</h3>
+                            <div class="text-4xl font-serif text-white font-bold text-dash-revenue-received mt-4 mb-2">R$ 0,00</div>
+                             <div class="text-xs text-rani-text/50 mb-1.5 uppercase font-bold tracking-widest">Recebido</div>
+                            
+                            <div class="text-xs text-rani-gold mt-1 text-dash-revenue-forecast">Previsto: R$ 0,00</div>
+                            <div class="mt-2 text-sm text-rani-text/60">Meta Anual: <span class="font-bold text-white">R$ 19.500,00</span></div>
+                        </div>
+                        
+                        <div class="flex-grow"></div>
+
+                        <div class="mt-6">
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-xs font-bold text-rani-gold uppercase tracking-widest">Progresso (Recebido)</span>
+                                <span class="text-lg font-bold text-rani-gold text-dash-revenue-pct">0%</span>
+                            </div>
+                            <div class="w-full bg-black/30 h-4 rounded-full overflow-hidden border border-white/5 relative">
+                                <div class="bg-rani-gold h-full w-[0%] progress-bar-revenue relative shadow-[0_0_20px_rgba(212,175,55,0.5)]">
+                                    <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CRM Section -->
+                <div id="crm-section" class="glass-panel p-8 rounded-2xl mb-8">
+                    <h3 class="font-serif text-2xl text-white mb-6">CRM e Lançamentos</h3>
+                    
+                    <!-- Input Form -->
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8 bg-white/5 p-6 rounded-xl border border-white/5">
+                        
+                        <!-- Row 1 -->
+                        <div class="md:col-span-2">
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Cliente</label>
+                            <input type="text" id="crm-client" placeholder="Nome do Cliente" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Tipo</label>
+                            <select id="crm-type" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm appearance-none">
+                                <option value="UGC Vídeo">UGC Vídeo</option>
+                                <option value="UGC Foto">UGC Foto</option>
+                                <option value="Publi">Publi</option>
+                                <option value="Collab">Collab</option>
+                                <option value="Pacote">Pacote</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Frequência</label>
+                            <select id="crm-freq" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm appearance-none" onchange="window.toggleDurationInput()">
+                                <option value="pontual">Pontual</option>
+                                <option value="recorrente">Recorrente (Mensal)</option>
+                                <option value="fixed">Recorrente (Contado)</option>
+                            </select>
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="md:col-span-2">
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Detalhes (Pacote/Info)</label>
+                            <input type="text" id="crm-details" placeholder="Ex: 5 fotos + 2 reels" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm">
+                        </div>
+                        
+                         <!-- Dynamic Duration Input -->
+                         <div id="crm-duration-container" class="hidden">
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Duração (Meses)</label>
+                            <input type="number" id="crm-duration" placeholder="Ex: 3" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Mês Início</label>
+                            <select id="crm-month" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm appearance-none">
+                                <option value="0">Janeiro</option>
+                                <option value="1">Fevereiro</option>
+                                <option value="2">Março</option>
+                                <option value="3">Abril</option>
+                                <option value="4">Maio</option>
+                                <option value="5">Junho</option>
+                                <option value="6">Julho</option>
+                                <option value="7">Agosto</option>
+                                <option value="8">Setembro</option>
+                                <option value="9">Outubro</option>
+                                <option value="10">Novembro</option>
+                                <option value="11">Dezembro</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs text-rani-text/80 uppercase font-bold mb-1">Valor Total (R$)</label>
+                            <div class="flex gap-2">
+                                <input type="number" id="crm-value" placeholder="0.00" class="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-rani-orange text-sm">
+                                <button onclick="window.saveCRMEntry()" id="crm-add-btn" class="bg-rani-orange text-rani-bg rounded-lg px-4 hover:bg-white transition-colors font-bold flex items-center justify-center min-w-[40px]">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- List com Paginação/Carrossel -->
+                    <div class="overflow-x-auto pb-2"> <!-- Scroll wrapper -->
+                        <table class="w-full text-left text-sm text-rani-text/80 min-w-[600px]"> <!-- Min width to force horizontal scroll on mobile -->
+                            <thead class="text-xs text-rani-text/40 uppercase border-b border-white/10">
+                                <tr>
+                                    <th class="pb-3 pl-4 whitespace-nowrap">Mês</th>
+                                    <th class="pb-3 whitespace-nowrap">Cliente</th>
+                                    <th class="pb-3 whitespace-nowrap">Tipo/Detalhes</th>
+                                    <th class="pb-3 whitespace-nowrap">Freq.</th>
+                                    <th class="pb-3 text-right pr-4 whitespace-nowrap">Valor</th>
+                                    <th class="pb-3 text-right pr-4 whitespace-nowrap">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crm-list-body">
+                                <!-- JS Injected -->
+                            </tbody>
+                        </table>
+                        <div id="crm-empty" class="text-center py-8 text-rani-text/80 text-xs italic hidden">
+                            Nenhum lançamento ainda.
+                        </div>
+                    </div>
+
+                    <!-- Navegação do CRM (Paginação) -->
+                    <div id="crm-pagination" class="mt-4 flex items-center justify-center gap-4">
+                        <button onclick="window.changeCRMPage(-1)" id="btn-prev-crm" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/50 hover:text-rani-orange hover:bg-white/10 transition-all disabled:opacity-20 disabled:cursor-not-allowed">
+                            <i class="fas fa-chevron-left text-xs"></i>
+                        </button>
+                        <span id="crm-page-indicator" class="text-[10px] text-white/40 uppercase tracking-widest font-bold">Página 1/1</span>
+                        <button onclick="window.changeCRMPage(1)" id="btn-next-crm" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/50 hover:text-rani-orange hover:bg-white/10 transition-all disabled:opacity-20 disabled:cursor-not-allowed">
+                            <i class="fas fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Revenue Chart -->
+                <div class="glass-panel p-8 rounded-2xl">
+                    <h3 class="font-serif text-2xl text-rani-orange mb-8 text-center">Rampa de Aquisição de Clientes 2026</h3>
+                    <div class="overflow-x-auto pb-2"> <!-- Scroll wrapper -->
+                        <div class="h-64 flex items-end justify-between gap-2 px-4 min-w-[600px]" id="ramp-chart-container">
+                            <!-- Bars injected by JS for dynamic control -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- ===================== 8. RECEBIMENTOS ===================== -->
+             <section id="payments" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6">
+                    <h1 class="font-serif text-4xl text-white mb-2">Recebimentos</h1>
+                    <p class="text-rani-text/80">Gestão mensal de recebíveis e entregas.</p>
+                </header>
+
+                <div class="glass-panel p-8 rounded-2xl">
+                    <div class="flex items-center gap-4 mb-6">
+                        <label class="text-sm font-bold text-rani-text/80 uppercase">Mês de Referência:</label>
+                        <select id="payments-month-select" onchange="window.renderPaymentsTable()" class="bg-black/20 border border-white/10 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-rani-orange text-sm">
+                            <option value="0">Janeiro</option>
+                            <option value="1">Fevereiro</option>
+                            <option value="2">Março</option>
+                            <option value="3">Abril</option>
+                            <option value="4">Maio</option>
+                            <option value="5">Junho</option>
+                            <option value="6">Julho</option>
+                            <option value="7">Agosto</option>
+                            <option value="8">Setembro</option>
+                            <option value="9">Outubro</option>
+                            <option value="10">Novembro</option>
+                            <option value="11">Dezembro</option>
+                        </select>
+                    </div>
+
+                    <div class="overflow-x-auto pb-2"> <!-- Scroll wrapper -->
+                        <table class="w-full text-left text-sm text-rani-text/80 min-w-[600px]"> <!-- Min width -->
+                            <thead class="text-xs text-rani-text/40 uppercase border-b border-white/10">
+                                <tr>
+                                    <th class="pb-3 pl-4 whitespace-nowrap">Cliente</th>
+                                    <th class="pb-3 whitespace-nowrap">Descrição/Qtd</th>
+                                    <th class="pb-3 whitespace-nowrap">Valor</th>
+                                    <th class="pb-3 text-center whitespace-nowrap">Pago?</th>
+                                    <th class="pb-3 text-right pr-4 whitespace-nowrap">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payments-list-body"></tbody>
+                        </table>
+                         <div id="payments-empty" class="text-center py-8 text-rani-text/80 text-xs italic hidden">Nenhum pagamento previsto para este mês.</div>
+                    </div>
+                     <div class="mt-6 pt-4 border-t border-white/10 flex justify-end gap-6 text-sm">
+                        <div>Previsto: <span class="text-white font-bold" id="pay-total-forecast">R$ 0,00</span></div>
+                        <div>Recebido: <span class="text-rani-gold font-bold" id="pay-total-received">R$ 0,00</span></div>
+                    </div>
+                </div>
+             </section>
+
+             <!-- ===================== 9. ANOTAÇÕES ===================== -->
+             <section id="notes" class="tab-content hidden fade-in">
+                <header class="mb-10 border-b border-white/10 pb-6 flex justify-between items-end">
+                    <div>
+                        <h1 class="font-serif text-4xl text-white mb-2">Anotações</h1>
+                        <p class="text-rani-text/80">Ideias, lembretes e insights rápidos.</p>
+                    </div>
+                    <button type="button" onclick="window.addNewNote()" class="bg-rani-orange hover:bg-white hover:text-rani-orange text-rani-bg font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Nova Nota
+                    </button>
+                </header>
+
+                <div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Notes injected by JS -->
+                </div>
+                 <div id="notes-empty" class="text-center py-20 text-rani-text/40 text-sm italic hidden">
+                    Nenhuma anotação ainda. Clique em "Nova Nota" para começar.
+                </div>
+             </section>
+
+        </div>
+    </main>
+
+    <script>
+        // --- CONFIGURAÇÃO GLOBAL E ASSIGMENTS ---
+        window.switchTab = switchTab;
+        window.updateDate = updateDate;
+        window.addInvestment = addInvestment;
+        window.saveCRMEntry = saveCRMEntry;
+        window.editEntry = editEntry;
+        window.deleteEntry = deleteEntry;
+        window.toggleDurationInput = toggleDurationInput;
+        window.togglePayment = togglePayment;
+        window.editPayment = editPayment;
+        window.renderPaymentsTable = renderPaymentsTable;
+        window.addNewNote = addNewNote;
+        window.deleteNote = deleteNote;
+        window.saveNote = saveNote;
+        window.updateNoteText = updateNoteText;
+        window.registerClass = registerClass;
+        window.undoClass = undoClass;
+        window.syncSocials = syncSocials;
+        window.toggleEngLevel = toggleEngLevel;
+        window.updateProfileImage = updateProfileImage;
+        window.closeModal = closeModal;
+        window.toggleSidebar = toggleSidebar;
+        window.saveRelationshipNotes = saveRelationshipNotes;
+        window.saveCareerNotes = saveCareerNotes;
+        
+        // Checklist Diário Inteligente
+        window.toggleDailyCheck = toggleDailyCheck;
+
+        // Paginação CRM
+        window.changeCRMPage = changeCRMPage;
+
+        // Saúde
+        window.changeHealthSlide = changeHealthSlide;
+        window.addHealthMonth = addHealthMonth;
+        window.deleteHealthMonth = deleteHealthMonth;
+        window.addHealthTask = addHealthTask;
+        window.toggleHealthTask = toggleHealthTask;
+        window.deleteHealthTask = deleteHealthTask;
+        
+        // Estudos
+        window.openCourseModal = openCourseModal;
+        window.saveCourse = saveCourse;
+        window.deleteCourse = deleteCourse;
+        window.editCourse = editCourse;
+
+        // Refluxo
+        window.addRefluxFood = addRefluxFood;
+        window.deleteRefluxFood = deleteRefluxFood;
+        
+        // Carreira
+        window.changeCareerTaskSlide = changeCareerTaskSlide;
+        window.addCareerTask = addCareerTask;
+        window.toggleCareerTask = toggleCareerTask;
+        window.deleteCareerTask = deleteCareerTask;
+        window.updateCareerTaskDate = updateCareerTaskDate; // Função para editar a data no card
+        window.updateSalesCard = updateSalesCard;
+        window.updateSalesStats = updateSalesStats;
+        window.updateFreqItem = updateFreqItem;
+        window.updateCareerTitle = updateCareerTitle;
+
+        // --- UI UTILS ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.add('flex');
+            } else {
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('flex');
+            }
+        }
+
+        function showConfirmModal(title, message, onConfirm) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-content').textContent = message;
+            document.getElementById('modal-inputs').innerHTML = '';
+            document.getElementById('modal-inputs').classList.add('hidden');
+            
+            const overlay = document.getElementById('custom-modal-overlay');
+            overlay.classList.remove('hidden');
+            
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            
+            newBtn.textContent = "Confirmar";
+            newBtn.className = "px-4 py-2 rounded-lg bg-rani-orange text-rani-bg font-bold hover:bg-white hover:text-rani-orange transition-colors text-sm";
+            
+            newBtn.onclick = () => {
+                onConfirm();
+                closeModal();
+            };
+        }
+
+        function showEditPaymentModal(currentVal, currentDesc, onConfirm) {
+            document.getElementById('modal-title').textContent = "Editar Pagamento";
+            document.getElementById('modal-content').textContent = "Ajuste os valores para este mês específico:";
+            
+            const container = document.getElementById('modal-inputs');
+            container.innerHTML = `
+                <div>
+                    <label class="block text-xs text-white/60 mb-1">Valor (R$)</label>
+                    <input type="number" id="modal-val" value="${currentVal}" class="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-white/60 mb-1">Descrição</label>
+                    <input type="text" id="modal-desc" value="${currentDesc || ''}" class="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white">
+                </div>
+            `;
+            container.classList.remove('hidden');
+            
+            const overlay = document.getElementById('custom-modal-overlay');
+            overlay.classList.remove('hidden');
+            
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            
+            newBtn.textContent = "Salvar";
+            
+            newBtn.onclick = () => {
+                const val = document.getElementById('modal-val').value;
+                const desc = document.getElementById('modal-desc').value;
+                onConfirm(val, desc);
+                closeModal();
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal-overlay').classList.add('hidden');
+        }
+
+        function switchTab(tabId) {
+            const selectedTab = document.getElementById(tabId);
+            if (!selectedTab) return; 
+
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('fade-in');
+            });
+            
+            selectedTab.classList.remove('hidden');
+            void selectedTab.offsetWidth; 
+            selectedTab.classList.add('fade-in');
+
+            if(tabId === 'payments') {
+                const select = document.getElementById('payments-month-select');
+                if(!select.value) {
+                    select.value = new Date().getMonth();
+                }
+                renderPaymentsTable();
+            }
+            if(tabId === 'finance') {
+                renderCRMTable();
+            }
+
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(btn => {
+                if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar');
+                if (!sidebar.classList.contains('hidden')) {
+                    sidebar.classList.add('hidden');
+                    sidebar.classList.remove('flex');
+                }
+            }
+        }
+
+        function updateDate() {
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            const today = new Date().toLocaleDateString('pt-BR', options);
+            const formattedDate = today.charAt(0).toUpperCase() + today.slice(1);
+            const dateHeader = document.getElementById('current-date-header');
+            if(dateHeader) dateHeader.textContent = formattedDate;
+        }
+
+        // --- FINANCEIRO & CRM (PAGINAÇÃO ADICIONADA) ---
+        let totalInvested = parseFloat(localStorage.getItem('rani_invested')) || 0;
+        let crmEntries = JSON.parse(localStorage.getItem('rani_crm')) || [];
+        let paymentData = JSON.parse(localStorage.getItem('rani_payments')) || {};
+        
+        let crmIdCounter = crmEntries.length > 0 ? Math.max(...crmEntries.map(e => e.id)) + 1 : 1;
+        let editingId = null;
+        let currentCRMPage = 0;
+        const crmItemsPerPage = 5;
+
+        const INVEST_GOAL = 8000;
+        const REVENUE_GOAL_TOTAL = 19500;
+        const monthlyRevenueGoals = Array.from({length: 12}, (_, i) => (i + 1) * 250);
+        const monthNamesShort = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+
+        function toggleDurationInput() {
+            const freq = document.getElementById('crm-freq').value;
+            const durContainer = document.getElementById('crm-duration-container');
+            if(freq === 'fixed') {
+                durContainer.classList.remove('hidden');
+            } else {
+                durContainer.classList.add('hidden');
+            }
+        }
+
+        function saveFinanceData() {
+            localStorage.setItem('rani_invested', totalInvested);
+            localStorage.setItem('rani_crm', JSON.stringify(crmEntries));
+            localStorage.setItem('rani_payments', JSON.stringify(paymentData));
+        }
+
+        function addInvestment(factor) {
+            const input = document.getElementById('invest-input');
+            const value = parseFloat(input.value);
+            if (value && value > 0) {
+                if(factor === -1) {
+                   totalInvested -= value;
+                   if(totalInvested < 0) totalInvested = 0;
+                } else {
+                   totalInvested += value; 
+                }
+                saveFinanceData(); 
+                updateAllFinance();
+                input.value = '';
+            }
+        }
+
+        function saveCRMEntry() {
+            const client = document.getElementById('crm-client').value;
+            const type = document.getElementById('crm-type').value;
+            const details = document.getElementById('crm-details').value;
+            const freq = document.getElementById('crm-freq').value;
+            const monthIdx = parseInt(document.getElementById('crm-month').value);
+            const value = parseFloat(document.getElementById('crm-value').value);
+            let duration = null;
+
+            if(freq === 'fixed') {
+                duration = parseInt(document.getElementById('crm-duration').value);
+                if(!duration || duration < 1) duration = 1;
+            }
+
+            if(client && value >= 0) { 
+                if (editingId) {
+                    const index = crmEntries.findIndex(e => e.id === editingId);
+                    if (index !== -1) {
+                        crmEntries[index] = { ...crmEntries[index], client, type, details, freq, duration, monthIdx, value };
+                    }
+                    editingId = null;
+                    const btn = document.getElementById('crm-add-btn');
+                    btn.innerHTML = '<i class="fas fa-plus"></i>';
+                    btn.classList.remove('bg-blue-500');
+                    btn.classList.add('bg-rani-orange');
+                } else {
+                    crmEntries.push({ 
+                        id: crmIdCounter++, client, type, details, freq, duration, monthIdx, value, cancelledMonth: null 
+                    });
+                }
+
+                saveFinanceData(); 
+                updateAllFinance();
+                renderCRMTable();
+                renderPaymentsTable();
+                
+                document.getElementById('crm-client').value = '';
+                document.getElementById('crm-details').value = '';
+                document.getElementById('crm-value').value = '';
+                if(freq === 'fixed') document.getElementById('crm-duration').value = '';
+            }
+        }
+
+        function editEntry(id) {
+            const entry = crmEntries.find(e => e.id === id);
+            if(!entry) return;
+            document.getElementById('crm-client').value = entry.client;
+            document.getElementById('crm-type').value = entry.type;
+            document.getElementById('crm-details').value = entry.details || '';
+            document.getElementById('crm-freq').value = entry.freq;
+            document.getElementById('crm-month').value = entry.monthIdx;
+            document.getElementById('crm-value').value = entry.value;
+            toggleDurationInput(); 
+            if(entry.freq === 'fixed' && entry.duration) document.getElementById('crm-duration').value = entry.duration;
+            editingId = id;
+            const btn = document.getElementById('crm-add-btn');
+            btn.innerHTML = '<i class="fas fa-save"></i>';
+            btn.classList.remove('bg-rani-orange');
+            btn.classList.add('bg-blue-500');
+            // Scroll to form
+            document.getElementById('crm-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function deleteEntry(id) {
+            showConfirmModal("Excluir Lançamento", "Tem certeza que deseja excluir este contrato/venda? Isso removerá todos os registros financeiros associados.", () => {
+                crmEntries = crmEntries.filter(e => e.id !== id);
+                if(editingId === id) {
+                    editingId = null;
+                    const btn = document.getElementById('crm-add-btn');
+                    btn.innerHTML = '<i class="fas fa-plus"></i>';
+                    btn.classList.remove('bg-blue-500');
+                    btn.classList.add('bg-rani-orange');
+                    document.getElementById('crm-client').value = '';
+                    document.getElementById('crm-value').value = '';
+                }
+                saveFinanceData(); 
+                updateAllFinance();
+                renderCRMTable();
+                renderPaymentsTable();
+            });
+        }
+
+        function changeCRMPage(dir) {
+            const totalPages = Math.ceil(crmEntries.length / crmItemsPerPage);
+            const newPage = currentCRMPage + dir;
+            if(newPage >= 0 && newPage < totalPages) {
+                currentCRMPage = newPage;
+                renderCRMTable();
+            }
+        }
+
+        function renderCRMTable() {
+            const tbody = document.getElementById('crm-list-body');
+            const emptyMsg = document.getElementById('crm-empty');
+            const pagination = document.getElementById('crm-pagination');
+            
+            if (crmEntries.length > 0) {
+                emptyMsg.style.display = 'none';
+                pagination.classList.remove('hidden');
+                tbody.innerHTML = '';
+                
+                const sortedEntries = [...crmEntries].sort((a, b) => a.monthIdx - b.monthIdx);
+                const totalPages = Math.max(1, Math.ceil(sortedEntries.length / crmItemsPerPage));
+                
+                if (currentCRMPage >= totalPages) currentCRMPage = totalPages - 1;
+                
+                const start = currentCRMPage * crmItemsPerPage;
+                const end = start + crmItemsPerPage;
+                const pageItems = sortedEntries.slice(start, end);
+
+                // Update Indicator
+                document.getElementById('crm-page-indicator').textContent = `Página ${currentCRMPage + 1}/${totalPages}`;
+                document.getElementById('btn-prev-crm').disabled = currentCRMPage === 0;
+                document.getElementById('btn-next-crm').disabled = currentCRMPage === totalPages - 1;
+
+                pageItems.forEach(entry => {
+                    let freqBadge = '';
+                    if(entry.freq === 'recorrente') freqBadge = `<span class="bg-blue-500/20 text-blue-200 text-[10px] px-2 py-0.5 rounded border border-blue-500/30">Mensal</span>`;
+                    else if(entry.freq === 'fixed') freqBadge = `<span class="bg-purple-500/20 text-purple-200 text-[10px] px-2 py-0.5 rounded border border-purple-500/30">${entry.duration} Meses</span>`;
+                    else freqBadge = `<span class="bg-white/5 text-white/50 text-[10px] px-2 py-0.5 rounded">Pontual</span>`;
+                    
+                    const detailText = entry.details ? `<br><span class="text-[10px] text-white/40 italic">${entry.details}</span>` : '';
+                    const row = `
+                        <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                            <td class="py-3 pl-4 text-rani-orange font-bold text-xs whitespace-nowrap">${monthNamesShort[entry.monthIdx]}</td>
+                            <td class="py-3 font-bold text-white whitespace-nowrap">${entry.client}</td>
+                            <td class="py-3 text-xs opacity-70 whitespace-nowrap">${entry.type}${detailText}</td>
+                            <td class="py-3 whitespace-nowrap">${freqBadge}</td>
+                            <td class="py-3 text-right pr-4 font-mono text-rani-cream whitespace-nowrap">R$ ${entry.value.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td class="py-3 text-right pr-4 flex justify-end gap-2 whitespace-nowrap">
+                                <button onclick="window.editEntry(${entry.id})" class="text-blue-400 hover:text-white text-xs"><i class="fas fa-pencil-alt"></i></button>
+                                <button onclick="window.deleteEntry(${entry.id})" class="text-white/30 hover:text-red-500 text-xs"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } else {
+                emptyMsg.style.display = 'block';
+                pagination.classList.add('hidden');
+                tbody.innerHTML = '';
+            }
+        }
+
+        function getPaymentInfo(entryId, monthIdx) {
+            const key = `p_${entryId}_${monthIdx}`;
+            return paymentData[key] || { paid: false, overrideValue: null, overrideDetails: null };
+        }
+
+        function togglePayment(entryId, monthIdx) {
+            const key = `p_${entryId}_${monthIdx}`;
+            if(!paymentData[key]) paymentData[key] = { paid: false };
+            paymentData[key].paid = !paymentData[key].paid;
+            saveFinanceData(); 
+            updateAllFinance();
+            renderPaymentsTable(); 
+        }
+        
+        function editPayment(entryId, monthIdx) {
+            const entry = crmEntries.find(e => e.id === entryId);
+            if(!entry) return;
+            const currentInfo = getPaymentInfo(entryId, monthIdx);
+            const currentVal = currentInfo.overrideValue !== null ? currentInfo.overrideValue : entry.value;
+            const currentDesc = currentInfo.overrideDetails || entry.details;
+
+            showEditPaymentModal(currentVal, currentDesc, (newValStr, newDesc) => {
+                const key = `p_${entryId}_${monthIdx}`;
+                if(!paymentData[key]) paymentData[key] = { paid: false };
+                
+                if(newValStr.trim() !== "") paymentData[key].overrideValue = parseFloat(newValStr);
+                else delete paymentData[key].overrideValue;
+                
+                if(newDesc !== null) paymentData[key].overrideDetails = newDesc;
+                
+                saveFinanceData(); 
+                updateAllFinance();
+                renderPaymentsTable();
+            });
+        }
+
+        function renderPaymentsTable() {
+            const monthIdx = parseInt(document.getElementById('payments-month-select').value);
+            const tbody = document.getElementById('payments-list-body');
+            const emptyMsg = document.getElementById('payments-empty');
+            tbody.innerHTML = '';
+            
+            let hasItems = false;
+            let totalForecast = 0;
+            let totalReceived = 0;
+
+            crmEntries.forEach(entry => {
+                let isActive = false;
+                if(entry.freq === 'pontual') { if(entry.monthIdx === monthIdx) isActive = true; }
+                else if(entry.freq === 'recorrente') { if(monthIdx >= entry.monthIdx) isActive = true; }
+                else if(entry.freq === 'fixed') { if(monthIdx >= entry.monthIdx && monthIdx < (entry.monthIdx + entry.duration)) isActive = true; }
+                
+                if(isActive && entry.cancelledMonth !== null && monthIdx > entry.cancelledMonth) {
+                    isActive = false;
+                }
+
+                if(isActive) {
+                    hasItems = true;
+                    const info = getPaymentInfo(entry.id, monthIdx);
+                    const displayValue = info.overrideValue !== null && info.overrideValue !== undefined ? info.overrideValue : entry.value;
+                    const displayDetails = info.overrideDetails || entry.details;
+                    
+                    totalForecast += displayValue;
+                    if(info.paid) totalReceived += displayValue;
+
+                    const checked = info.paid ? 'checked' : '';
+                    
+                    const row = `
+                        <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                            <td class="py-3 pl-4 font-bold text-white whitespace-nowrap">${entry.client}</td>
+                            <td class="py-3 text-xs opacity-70 whitespace-nowrap">${entry.type}${displayDetails ? ' - ' + displayDetails : ''}</td>
+                            <td class="py-3 font-mono text-rani-cream whitespace-nowrap">R$ ${displayValue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td class="py-3 text-center">
+                                <input type="checkbox" ${checked} onchange="togglePayment(${entry.id}, ${monthIdx})" class="w-4 h-4 accent-rani-orange cursor-pointer">
+                            </td>
+                            <td class="py-3 text-right pr-4">
+                                <button onclick="editPayment(${entry.id}, ${monthIdx})" class="text-blue-400 hover:text-white text-xs"><i class="fas fa-pencil-alt"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                }
+            });
+
+            if(!hasItems) emptyMsg.style.display = 'block';
+            else emptyMsg.style.display = 'none';
+
+            document.getElementById('pay-total-forecast').textContent = `R$ ${totalForecast.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('pay-total-received').textContent = `R$ ${totalReceived.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+
+        function calculateMonthlyRevenue(monthIndex) {
+            let forecast = 0;
+            let received = 0;
+            
+            crmEntries.forEach(entry => {
+                let isActive = false;
+                if(entry.freq === 'pontual') { if(entry.monthIdx === monthIndex) isActive = true; }
+                else if(entry.freq === 'recorrente') { if(monthIndex >= entry.monthIdx) isActive = true; }
+                else if(entry.freq === 'fixed') { if(monthIndex >= entry.monthIdx && monthIndex < (entry.monthIdx + entry.duration)) isActive = true; }
+                
+                if(isActive && entry.cancelledMonth !== null && monthIndex > entry.cancelledMonth) {
+                    isActive = false;
+                }
+
+                if(isActive) {
+                    const info = getPaymentInfo(entry.id, monthIndex);
+                    const val = info.overrideValue !== null && info.overrideValue !== undefined ? info.overrideValue : entry.value;
+                    forecast += val; 
+                    if(info.paid) received += val; 
+                }
+            });
+            return { forecast, received };
+        }
+
+        function updateAllFinance() {
+            // Investment
+            const investFmt = "R$ " + totalInvested.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            
+            document.querySelectorAll('#dash-invest-val, .text-dash-invest').forEach(el => {
+                 el.textContent = investFmt;
+            });
+
+            let investPct = INVEST_GOAL > 0 ? Math.round((totalInvested / INVEST_GOAL) * 100) : 0;
+            document.querySelectorAll('.text-dash-invest-pct').forEach(el => el.textContent = investPct + '%');
+            document.querySelectorAll('.progress-bar-dash').forEach(el => el.style.width = Math.min(investPct, 100) + '%');
+
+            // Revenue
+            let totalForecastYear = 0;
+            let totalReceivedYear = 0;
+            for(let i=0; i<12; i++) {
+                const m = calculateMonthlyRevenue(i);
+                totalForecastYear += m.forecast;
+                totalReceivedYear += m.received;
+            }
+
+            const revFormatted = "R$ " + totalReceivedYear.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            
+            document.querySelectorAll('#dash-revenue-val, .text-dash-revenue, .text-dash-revenue-received').forEach(el => {
+                 el.textContent = revFormatted;
+            });
+            
+            const finRevForecast = document.querySelector('.text-dash-revenue-forecast');
+            if(finRevForecast) finRevForecast.textContent = `Previsto: R$ ${totalForecastYear.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+            let revPct = REVENUE_GOAL_TOTAL > 0 ? Math.round((totalReceivedYear / REVENUE_GOAL_TOTAL) * 100) : 0;
+            
+            document.querySelectorAll('#dash-revenue-pct, .text-dash-revenue-pct').forEach(el => el.textContent = revPct + '%');
+
+            const barWidth = Math.min(revPct, 100);
+            document.querySelectorAll('#dash-revenue-bar, .progress-bar-revenue').forEach(el => el.style.width = barWidth + '%');
+
+            renderRampChart();
+        }
+
+        function renderRampChart() {
+            const container = document.getElementById('ramp-chart-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            const forecasts = monthlyRevenueGoals.map((_, i) => calculateMonthlyRevenue(i).forecast);
+            
+            const maxValue = Math.max(3500, ...monthlyRevenueGoals, ...forecasts);
+
+            monthlyRevenueGoals.forEach((goal, i) => {
+                const actual = forecasts[i]; 
+                
+                const goalHeightPct = (goal / maxValue) * 90; 
+                const actualHeightPct = (actual / maxValue) * 90;
+                
+                const isMet = actual >= goal;
+                const barColor = isMet ? 'bg-rani-gold shadow-[0_0_15px_rgba(212,175,55,0.6)]' : 'bg-white/20';
+                const hoverColor = 'group-hover:bg-rani-orange';
+
+                let pctMet = 0;
+                if(goal > 0) pctMet = Math.round((actual / goal) * 100);
+
+                const html = `
+                    <div class="w-full flex flex-col items-center group h-full justify-end relative transition-all duration-300 hover:scale-105">
+                         <div class="absolute -top-12 text-xs font-bold text-rani-cream bg-black/80 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none shadow-xl border border-rani-gold/30">
+                            R$${actual.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} (${pctMet}%)
+                        </div>
+                        <div class="w-full relative h-full flex items-end justify-center">
+                             <div class="absolute bottom-0 w-full bg-white/5 rounded-t border-t border-white/20 z-0" style="height: ${goalHeightPct}%"></div>
+                             <div class="w-full ${barColor} ${hoverColor} transition-all duration-700 opacity-90 z-10 rounded-t relative" style="height: ${actualHeightPct}%"></div>
+                        </div>
+                        <div class="text-[10px] text-rani-cream mt-2 font-bold opacity-70 group-hover:opacity-100 transition-opacity text-center leading-tight">
+                            ${monthNamesShort[i]}<br>
+                            <span class="text-[9px] font-normal">R$${actual.toLocaleString('pt-BR', {minimumFractionDigits: 0, maximumFractionDigits: 0})}/${goal}</span>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        // --- NOTES LOGIC ---
+        let userNotes = JSON.parse(localStorage.getItem('rani_notes')) || [];
+
+        function addNewNote() {
+            const newNote = { id: Date.now(), text: "Nova anotação..." };
+            userNotes.push(newNote);
+            renderNotes();
+        }
+
+        function deleteNote(id) {
+            showConfirmModal("Excluir Anotação", "Deseja realmente apagar esta nota?", () => {
+                userNotes = userNotes.filter(n => n.id !== id);
+                renderNotes();
+            });
+        }
+        
+        function saveNote(id) {
+            localStorage.setItem('rani_notes', JSON.stringify(userNotes));
+            const btn = document.getElementById(`save-btn-${id}`);
+            if(btn) {
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                btn.classList.add('text-green-400');
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-save"></i>';
+                    btn.classList.remove('text-green-400');
+                }, 1000);
+            }
+        }
+
+        function renderNotes() {
+            localStorage.setItem('rani_notes', JSON.stringify(userNotes));
+            
+            const container = document.getElementById('notes-container');
+            const empty = document.getElementById('notes-empty');
+            
+            if (userNotes.length === 0) {
+                if(empty) empty.style.display = 'block';
+                if(container) container.innerHTML = '';
+            } else {
+                if(empty) empty.style.display = 'none';
+                if(container) {
+                    container.innerHTML = '';
+                    userNotes.forEach(note => {
+                        const html = `
+                            <div class="glass-panel p-6 rounded-2xl relative group min-h-[150px] flex flex-col transition-all hover:-translate-y-1">
+                                <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                     <button type="button" id="save-btn-${note.id}" onclick="window.saveNote(${note.id})" class="text-white/40 hover:text-white transition-colors" title="Salvar"><i class="fas fa-save"></i></button>
+                                     <button type="button" onclick="window.deleteNote(${note.id})" class="text-white/40 hover:text-red-500 transition-colors" title="Excluir"><i class="fas fa-trash"></i></button>
+                                </div>
+                                <div class="text-white/90 text-sm font-medium whitespace-pre-wrap flex-grow outline-none h-full w-full" contenteditable="true" oninput="updateNoteText(${note.id}, this)">${note.text}</div>
+                            </div>
+                        `;
+                        container.innerHTML += html;
+                    });
+                }
+            }
+        }
+
+        function updateNoteText(id, el) {
+            const note = userNotes.find(n => n.id === id);
+            if(note) {
+                note.text = el.innerText;
+                localStorage.setItem('rani_notes', JSON.stringify(userNotes));
+            }
+        }
+
+        function saveRelationshipNotes(el) {
+            localStorage.setItem('rani_rel_notes', el.value);
+        }
+
+        // New Function
+        function saveCareerNotes(el) {
+            localStorage.setItem('rani_career_notes', el.value);
+        }
+
+        // --- SAÚDE ---
+        let healthData = JSON.parse(localStorage.getItem('rani_health_data')) || [
+            {
+                name: 'Janeiro',
+                items: [
+                    { text: 'Marcar clínico geral', done: false },
+                    { text: 'Exame de sangue', done: false },
+                    { text: 'Marcar endócrinologista', done: false }
+                ]
+            }
+        ];
+        
+        const allMonthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        let currentVirtualSlide = 0; 
+
+        function getVirtualSlides() {
+            let slides = [];
+            healthData.forEach((month, mIdx) => {
+                const totalItems = month.items.length;
+                const totalPages = totalItems > 0 ? Math.ceil(totalItems / 5) : 1;
+                for (let p = 0; p < totalPages; p++) {
+                    slides.push({
+                        monthName: month.name,
+                        monthIndex: mIdx,
+                        pageIndex: p,
+                        totalPages: totalPages,
+                        items: month.items.slice(p * 5, (p + 1) * 5)
+                    });
+                }
+            });
+            return slides;
+        }
+
+        function renderHealthCarousel() {
+            const slides = getVirtualSlides();
+            if (slides.length === 0) {
+                document.getElementById('health-month-title').textContent = "Sem Meses";
+                document.getElementById('health-slide-indicator').textContent = "- / -";
+                document.getElementById('health-items-container').innerHTML = `<div class="text-center py-12 text-white/30 text-xs italic flex flex-col items-center gap-2"><i class="fas fa-list text-2xl mb-1"></i><br>Lista vazia.<br>Adicione itens abaixo.</div>`;
+                document.getElementById('btn-prev-health').disabled = true;
+                document.getElementById('btn-next-health').disabled = true;
+                updateMonthSelector();
+                return;
+            }
+
+            if (currentVirtualSlide >= slides.length) currentVirtualSlide = slides.length - 1;
+            if (currentVirtualSlide < 0) currentVirtualSlide = 0;
+
+            const current = slides[currentVirtualSlide];
+            const pageTitle = current.totalPages > 1 ? `${current.monthName} (${current.pageIndex + 1}/${current.totalPages})` : current.monthName;
+            document.getElementById('health-month-title').textContent = pageTitle;
+            document.getElementById('health-slide-indicator').textContent = `${currentVirtualSlide + 1} / ${slides.length}`;
+            document.getElementById('btn-prev-health').disabled = currentVirtualSlide === 0;
+            document.getElementById('btn-next-health').disabled = currentVirtualSlide === slides.length - 1;
+
+            const container = document.getElementById('health-items-container');
+            container.innerHTML = '';
+            
+            if (current.items.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 text-white/30 text-xs italic flex flex-col items-center gap-2"><i class="fas fa-list text-2xl mb-1"></i><br>Lista vazia.<br>Adicione itens abaixo.</div>`;
+            } else {
+                current.items.forEach((item, relativeIdx) => {
+                    const realIdx = (current.pageIndex * 5) + relativeIdx;
+                    const checked = item.done ? 'checked' : '';
+                    const doneStyle = item.done ? 'line-through opacity-50 text-rani-orange' : 'text-white/90';
+                    const iconStyle = item.done ? 'block' : 'hidden';
+                    const html = `
+                        <div class="group flex items-center justify-between bg-white/5 p-3 rounded-xl border border-transparent hover:border-white/10 transition-all animate-fade-in">
+                            <label class="custom-checkbox flex items-center cursor-pointer flex-1 select-none">
+                                <input type="checkbox" class="hidden" ${checked} onchange="toggleHealthTask(${current.monthIndex}, ${realIdx})">
+                                <div class="w-5 h-5 border-2 border-rani-orange rounded flex items-center justify-center transition-all bg-black/20 mr-3 shrink-0">
+                                    <svg class="w-3 h-3 text-white ${iconStyle}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                                <span class="text-sm transition-all ${doneStyle}">${item.text}</span>
+                            </label>
+                            <button onclick="deleteHealthTask(${current.monthIndex}, ${realIdx})" class="text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all text-xs ml-2 px-2">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+            }
+            updateMonthSelector();
+        }
+
+        function updateMonthSelector() {
+            const select = document.getElementById('new-month-select');
+            const usedMonths = healthData.map(m => m.name);
+            const available = allMonthNames.filter(m => !usedMonths.includes(m));
+            let html = '<option value="" disabled selected>Adicionar Mês...</option>';
+            available.forEach(m => {
+                html += `<option value="${m}" class="text-black">${m}</option>`;
+            });
+            select.innerHTML = html;
+        }
+
+        function changeHealthSlide(dir) {
+            const slides = getVirtualSlides();
+            const newIndex = currentVirtualSlide + dir;
+            if(newIndex >= 0 && newIndex < slides.length) {
+                currentVirtualSlide = newIndex;
+                renderHealthCarousel();
+            }
+        }
+
+        function addHealthMonth() {
+            const select = document.getElementById('new-month-select');
+            const name = select.value;
+            if(name) {
+                healthData.push({ name: name, items: [] });
+                saveHealthData();
+                const slides = getVirtualSlides();
+                currentVirtualSlide = slides.length - 1; 
+                renderHealthCarousel();
+            }
+        }
+        
+        function deleteHealthMonth() {
+            const slides = getVirtualSlides();
+            if(slides.length === 0) return;
+            const current = slides[currentVirtualSlide];
+            const monthName = current.monthName;
+            const monthIndex = current.monthIndex;
+            showConfirmModal("Excluir Mês", `Tem certeza que deseja apagar o mês de ${monthName} e todos os seus itens?`, () => {
+                healthData.splice(monthIndex, 1);
+                saveHealthData();
+                renderHealthCarousel();
+            });
+        }
+
+        function addHealthTask() {
+            const input = document.getElementById('new-health-task');
+            const text = input.value.trim();
+            if(text) {
+                const slides = getVirtualSlides();
+                const currentView = slides[currentVirtualSlide];
+                const monthIdx = currentView.monthIndex;
+                healthData[monthIdx].items.push({ text: text, done: false });
+                input.value = '';
+                saveHealthData();
+                const newSlides = getVirtualSlides();
+                let targetSlide = -1;
+                for(let i = newSlides.length - 1; i >= 0; i--) {
+                    if(newSlides[i].monthIndex === monthIdx) {
+                        targetSlide = i;
+                        break;
+                    }
+                }
+                if(targetSlide !== -1) currentVirtualSlide = targetSlide;
+                renderHealthCarousel();
+            }
+        }
+
+        function toggleHealthTask(mIdx, itemIdx) {
+            healthData[mIdx].items[itemIdx].done = !healthData[mIdx].items[itemIdx].done;
+            saveHealthData();
+            renderHealthCarousel();
+        }
+
+        function deleteHealthTask(mIdx, itemIdx) {
+            healthData[mIdx].items.splice(itemIdx, 1);
+            saveHealthData();
+            const slides = getVirtualSlides();
+            if(currentVirtualSlide >= slides.length) currentVirtualSlide = Math.max(0, slides.length - 1);
+            renderHealthCarousel();
+        }
+
+        function saveHealthData() {
+            localStorage.setItem('rani_health_data', JSON.stringify(healthData));
+        }
+
+        // --- REFLUXO ---
+        let refluxFoods = JSON.parse(localStorage.getItem('rani_reflux_foods')) || ['Café', 'Refrigerante', 'Pimenta', 'Chocolate', 'Tomate', 'Frituras'];
+
+        function renderRefluxList() {
+            const container = document.getElementById('reflux-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+            if (refluxFoods.length === 0) {
+                container.innerHTML = `<span class="text-white/30 text-xs italic">Nenhum alimento listado.</span>`;
+            } else {
+                refluxFoods.forEach((food, index) => {
+                    const html = `
+                        <div class="group flex items-center gap-2 bg-white/5 p-3 rounded-lg border border-transparent hover:border-red-500/30 transition-all animate-fade-in">
+                            <span class="text-sm text-white/90 font-medium">${food}</span>
+                            <button onclick="deleteRefluxFood(${index})" class="text-white/30 hover:text-red-400 transition-colors ml-1 w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+            }
+        }
+
+        function addRefluxFood() {
+            const input = document.getElementById('new-reflux-food');
+            const food = input.value.trim();
+            if(food) {
+                refluxFoods.push(food);
+                input.value = '';
+                saveRefluxData();
+                renderRefluxList();
+            }
+        }
+
+        function deleteRefluxFood(index) {
+            refluxFoods.splice(index, 1);
+            saveRefluxData();
+            renderRefluxList();
+        }
+
+        function saveRefluxData() {
+            localStorage.setItem('rani_reflux_foods', JSON.stringify(refluxFoods));
+        }
+
+        // --- ESTUDOS ---
+        let courses = JSON.parse(localStorage.getItem('rani_courses')) || [];
+
+        if (courses.length === 0) {
+            const oldProgress = parseInt(localStorage.getItem('rani_classes_done')) || 0;
+            courses.push({
+                id: Date.now(),
+                name: "Curso UGC",
+                totalClasses: 68,
+                classesDone: oldProgress,
+                goalType: 'daily',
+                goalValue: 2
+            });
+            saveCoursesData();
+        }
+
+        let editingCourseId = null;
+
+        function renderCourses() {
+            const container = document.getElementById('courses-container');
+            const emptyMsg = document.getElementById('courses-empty');
+            
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (courses.length === 0) {
+                emptyMsg.style.display = 'block';
+            } else {
+                emptyMsg.style.display = 'none';
+                courses.forEach(course => {
+                    const remaining = course.totalClasses - course.classesDone;
+                    const pct = course.totalClasses > 0 ? Math.round((course.classesDone / course.totalClasses) * 100) : 0;
+                    
+                    let barColor = 'from-purple-600 to-purple-400';
+                    if(pct >= 100) barColor = 'from-green-600 to-green-400';
+                    else if(pct >= 50) barColor = 'from-blue-600 to-blue-400';
+
+                    let gType = course.goalType || 'daily';
+                    let gValue = course.goalValue || 0;
+                    
+                    let goalLabel = gType === 'weekly' ? 'Meta Semanal' : 'Meta Diária';
+                    let goalIcon = gType === 'weekly' ? 'fa-calendar-week' : 'fa-bullseye';
+
+                    const html = `
+                        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 transition-all hover:border-purple-500/40 relative group overflow-hidden shadow-2xl">
+                            <!-- Background Accent -->
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none"></div>
+
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <h3 class="font-serif text-2xl text-white font-bold tracking-tight">${course.name}</h3>
+                                        <span class="px-2 py-1 bg-purple-500/10 border border-purple-500/20 rounded text-[10px] uppercase font-bold text-purple-300 tracking-widest">${gType === 'daily' ? 'Diário' : 'Semanal'}</span>
+                                    </div>
+                                    <div class="flex items-center gap-4 text-xs text-white/50">
+                                        <span class="flex items-center gap-1.5"><i class="fas ${goalIcon} text-purple-400 text-[10px]"></i> ${goalLabel}: <strong class="text-white">${gValue} aulas</strong></span>
+                                        <span class="flex items-center gap-1.5"><i class="fas fa-layer-group text-purple-400 text-[10px]"></i> Total: <strong class="text-white">${course.totalClasses}</strong></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex gap-2">
+                                    <button onclick="editCourse(${course.id})" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-purple-500/20 text-white/60 hover:text-purple-300 flex items-center justify-center transition-all border border-white/10">
+                                        <i class="fas fa-edit text-sm"></i>
+                                    </button>
+                                    <button onclick="deleteCourse(${course.id})" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-red-500/20 text-white/60 hover:text-red-400 flex items-center justify-center transition-all border border-white/10">
+                                        <i class="fas fa-trash-alt text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-8 items-end relative z-10">
+                                <div class="bg-black/20 border border-white/5 rounded-2xl p-5 flex flex-col items-center justify-center shadow-inner">
+                                    <span class="text-4xl font-black text-white leading-none">${remaining}</span>
+                                    <span class="text-[9px] uppercase tracking-widest text-white/30 font-bold mt-2">Aulas Restantes</span>
+                                </div>
+
+                                <div class="md:col-span-3">
+                                    <div class="flex justify-between items-end mb-3">
+                                        <div class="text-sm">
+                                            <span class="text-white/40 text-[11px] uppercase font-bold block mb-1">Carga Horária</span>
+                                            <span class="text-white font-mono font-bold">${course.classesDone} <span class="text-white/20">/</span> ${course.totalClasses} concluídas</span>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="text-2xl font-black text-white leading-none">${pct}%</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="w-full bg-black/40 h-3 rounded-full overflow-hidden border border-white/5 p-0.5 mb-6 shadow-inner">
+                                        <div class="bg-gradient-to-r ${barColor} h-full transition-all duration-1000 relative rounded-full shadow-[0_0_15px_rgba(147,51,234,0.3)]" style="width: ${pct}%">
+                                            <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex gap-3">
+                                        <button onclick="registerClass(${course.id})" class="flex-1 h-12 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/40 active:scale-95 flex items-center justify-center gap-2 uppercase tracking-widest text-xs">
+                                            <i class="fas fa-check-circle text-sm"></i> Registrar Aula
+                                        </button>
+                                        <button onclick="undoClass(${course.id})" class="w-12 h-12 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-xl transition-all border border-white/10 flex items-center justify-center" title="Desfazer">
+                                            <i class="fas fa-undo-alt text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+            }
+            updateDashboardStudyWidget();
+        }
+
+        function openCourseModal(course = null) {
+            const iEdit = !!course;
+            editingCourseId = iEdit ? course.id : null;
+            const title = iEdit ? "Editar Curso" : "Novo Curso";
+            const btnText = iEdit ? "Salvar Alterações" : "Criar Curso";
+            const nameVal = iEdit ? course.name : "";
+            const totalVal = iEdit ? course.totalClasses : "";
+            
+            let typeVal = 'daily';
+            let goalVal = '1';
+
+            if (iEdit) {
+                typeVal = course.goalType || 'daily';
+                goalVal = course.goalValue || 1;
+            }
+
+            const container = document.getElementById('modal-inputs');
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-content').textContent = "Preencha os detalhes do seu plano de estudos.";
+            
+            container.innerHTML = `
+                <div class="mb-4">
+                    <label class="block text-xs text-white/60 mb-1 font-bold uppercase">Nome do Curso</label>
+                    <input type="text" id="course-name" value="${nameVal}" placeholder="Ex: Marketing Digital" class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-rani-orange transition-colors">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs text-white/60 mb-1 font-bold uppercase">Total de Aulas</label>
+                    <input type="number" id="course-total" value="${totalVal}" placeholder="0" class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-rani-orange transition-colors">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-white/60 mb-1 font-bold uppercase">Tipo de Meta</label>
+                        <div class="relative">
+                            <select id="course-goal-type" class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-rani-orange appearance-none transition-colors cursor-pointer">
+                                <option value="daily" ${typeVal === 'daily' ? 'selected' : ''}>Diária</option>
+                                <option value="weekly" ${typeVal === 'weekly' ? 'selected' : ''}>Semanal</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white/50">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-white/60 mb-1 font-bold uppercase">Qtd. Aulas</label>
+                        <input type="number" id="course-goal-value" value="${goalVal}" class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-rani-orange transition-colors">
+                    </div>
+                </div>
+            `;
+            container.classList.remove('hidden');
+
+            const overlay = document.getElementById('custom-modal-overlay');
+            overlay.classList.remove('hidden');
+
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            
+            newBtn.textContent = btnText;
+            newBtn.onclick = () => saveCourse();
+        }
+
+        function saveCourse() {
+            const name = document.getElementById('course-name').value.trim();
+            const total = parseInt(document.getElementById('course-total').value) || 0;
+            const goalType = document.getElementById('course-goal-type').value;
+            const goalValue = parseInt(document.getElementById('course-goal-value').value) || 0;
+
+            if (!name || total <= 0) {
+                // Manter faithful reproduction do alert original, embora custom modal seja preferível
+                alert("Por favor, insira um nome e um total de aulas válido.");
+                return;
+            }
+
+            if (editingCourseId) {
+                const idx = courses.findIndex(c => c.id === editingCourseId);
+                if (idx !== -1) {
+                    courses[idx].name = name;
+                    courses[idx].totalClasses = total;
+                    courses[idx].goalType = goalType;
+                    courses[idx].goalValue = goalValue;
+                    if(courses[idx].classesDone > total) courses[idx].classesDone = total;
+                }
+            } else {
+                courses.push({
+                    id: Date.now(),
+                    name: name,
+                    totalClasses: total,
+                    classesDone: 0,
+                    goalType: goalType,
+                    goalValue: goalValue
+                });
+            }
+
+            saveCoursesData();
+            renderCourses();
+            closeModal();
+        }
+
+        function editCourse(id) {
+            const course = courses.find(c => c.id === id);
+            if (course) openCourseModal(course);
+        }
+
+        function deleteCourse(id) {
+            showConfirmModal("Excluir Curso", "Tem certeza? Todo o progresso deste curso será perdido.", () => {
+                courses = courses.filter(c => c.id !== id);
+                saveCoursesData();
+                renderCourses();
+            });
+        }
+
+        function registerClass(id) {
+            const idx = courses.findIndex(c => c.id === id);
+            if (idx !== -1 && courses[idx].classesDone < courses[idx].totalClasses) {
+                courses[idx].classesDone++;
+                saveCoursesData();
+                renderCourses();
+            }
+        }
+
+        function undoClass(id) {
+            const idx = courses.findIndex(c => c.id === id);
+            if (idx !== -1 && courses[idx].classesDone > 0) {
+                courses[idx].classesDone--;
+                saveCoursesData();
+                renderCourses();
+            }
+        }
+
+        function saveCoursesData() {
+            localStorage.setItem('rani_courses', JSON.stringify(courses));
+        }
+
+        // --- CARREIRA (TAREFAS) ---
+        let careerTasks = JSON.parse(localStorage.getItem('rani_career_tasks')) || [
+            { date: 'ADICIONE A DATA', text: 'Criar linha editorial Própria Vita', done: false },
+            { date: 'ADICIONE A DATA', text: 'Criar linha editorial UGC', done: false }
+        ];
+        let currentCareerSlide = 0;
+
+        function renderCareerTasks() {
+            const container = document.getElementById('career-tasks-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const itemsPerPage = 2;
+            const totalPages = Math.max(1, Math.ceil(careerTasks.length / itemsPerPage));
+            
+            if (currentCareerSlide >= totalPages) currentCareerSlide = totalPages - 1;
+            if (currentCareerSlide < 0) currentCareerSlide = 0;
+
+            const ind = document.getElementById('career-task-indicator');
+            if(ind) ind.textContent = `${currentCareerSlide + 1}/${totalPages}`;
+            
+            const btnPrev = document.getElementById('btn-prev-career-task');
+            const btnNext = document.getElementById('btn-next-career-task');
+            if(btnPrev) btnPrev.disabled = currentCareerSlide === 0;
+            if(btnNext) btnNext.disabled = currentCareerSlide === totalPages - 1;
+
+            const start = currentCareerSlide * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageItems = careerTasks.slice(start, end);
+
+            if (pageItems.length === 0) {
+                container.innerHTML = `<div class="col-span-1 md:col-span-2 text-center py-8 text-white/30 text-xs italic border border-dashed border-white/10 rounded-xl">Nenhuma tarefa prioritária.</div>`;
+            } else {
+                pageItems.forEach((task, idx) => {
+                    const realIdx = start + idx;
+                    
+                    const checked = task.done ? 'checked' : '';
+                    const opacity = task.done ? 'opacity-60 bg-black/20' : 'bg-white/5';
+                    const strike = task.done ? 'line-through text-white/40' : 'text-white/90';
+                    const iconColor = task.done ? 'text-rani-orange' : 'hidden';
+
+                    const html = `
+                        <div class="${opacity} p-4 rounded-xl border border-white/5 relative group transition-all h-full flex flex-col justify-center">
+                            <button onclick="deleteCareerTask(${realIdx})" class="absolute top-2 right-2 text-white/10 hover:text-red-400 transition-colors z-10 p-1">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                            <p class="text-[10px] text-rani-orange font-bold uppercase mb-2 tracking-widest flex items-center gap-2 outline-none focus:border-b border-white/20" contenteditable="true" onblur="window.updateCareerTaskDate(${realIdx}, this)">
+                                <i class="far fa-calendar"></i> ${task.date || 'ADICIONE A DATA'}
+                            </p>
+                            <label class="custom-checkbox flex items-start cursor-pointer group/chk select-none">
+                                <input type="checkbox" class="hidden" ${checked} onchange="toggleCareerTask(${realIdx})">
+                                <div class="w-5 h-5 border border-white/20 rounded flex items-center justify-center transition-all bg-black/20 shrink-0 mr-3 mt-0.5 group-hover/chk:border-rani-orange/50">
+                                    <svg class="w-3 h-3 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                                <span class="text-sm ${strike} group-hover/chk:text-rani-cream transition-colors leading-tight font-medium">${task.text}</span>
+                            </label>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+            }
+        }
+
+        function changeCareerTaskSlide(dir) {
+            const itemsPerPage = 2;
+            const totalPages = Math.ceil(careerTasks.length / itemsPerPage);
+            const newSlide = currentCareerSlide + dir;
+            if (newSlide >= 0 && newSlide < totalPages) {
+                currentCareerSlide = newSlide;
+                renderCareerTasks();
+            }
+        }
+
+        function addCareerTask() {
+            const textInput = document.getElementById('new-career-task-text');
+            
+            if (textInput.value.trim()) {
+                careerTasks.push({
+                    date: 'ADICIONE A DATA',
+                    text: textInput.value.trim(),
+                    done: false
+                });
+                
+                saveCareerTasks();
+                renderCareerTasks();
+                textInput.value = '';
+            } else {
+                if(!textInput.value.trim()) textInput.classList.add('border-red-500');
+                setTimeout(() => {
+                    textInput.classList.remove('border-red-500');
+                }, 1500);
+            }
+        }
+
+        function updateCareerTaskDate(idx, el) {
+            careerTasks[idx].date = el.innerText.trim();
+            saveCareerTasks();
+        }
+
+        function toggleCareerTask(idx) {
+            careerTasks[idx].done = !careerTasks[idx].done;
+            saveCareerTasks();
+            renderCareerTasks();
+        }
+
+        function deleteCareerTask(idx) {
+            showConfirmModal("Excluir Tarefa", "Deseja remover esta tarefa prioritária?", () => {
+                careerTasks.splice(idx, 1);
+                saveCareerTasks();
+                renderCareerTasks();
+            });
+        }
+
+        function saveCareerTasks() {
+            localStorage.setItem('rani_career_tasks', JSON.stringify(careerTasks));
+        }
+
+        // --- CARREIRA (TEXTOS EDITÁVEIS) ---
+        const defaultSalesCards = [
+            { days: "SEG-TER", title: "Prospecção", subtitle: "50 Leads/dia", color: "text-rani-orange" },
+            { days: "QUA", title: "Follow-Up", subtitle: "Retorno", color: "text-blue-300" },
+            { days: "QUI-SEX", title: "Listas", subtitle: "50 Nomes/dia", color: "text-rani-cream" }
+        ];
+        
+        const defaultSalesStats = {
+            title: "Meta de Volume",
+            value: "400 Leads por Mês",
+            checkLabel: "Verificação Diária:",
+            checkValue: "Vagas em Agências & Plataformas"
+        };
+
+        const defaultFreqShorts = [
+            { title: "Própria Vita", freq: "1 vídeo/sem (Fev)", width: "25%" },
+            { title: "UGC", freq: "1 vídeo/sem (Fev)", width: "25%" }
+        ];
+
+        const defaultFreqYoutube = [
+            { title: "Youtube (Jan/Fev)", freq: "1 vídeo/sem", width: "25%", opacity: "opacity-100" },
+            { title: "Youtube (Março+)", freq: "2 vídeos/sem", width: "50%", opacity: "opacity-100" },
+            { title: "Shorts (Fev+)", freq: "2 vídeos/sem", width: "50%", opacity: "opacity-70" }
+        ];
+
+        let salesCards = JSON.parse(localStorage.getItem('rani_sales_cards')) || defaultSalesCards;
+        let salesStats = JSON.parse(localStorage.getItem('rani_sales_stats')) || defaultSalesStats;
+        let freqShorts = JSON.parse(localStorage.getItem('rani_freq_shorts')) || defaultFreqShorts;
+        let freqYoutube = JSON.parse(localStorage.getItem('rani_freq_yt')) || defaultFreqYoutube;
+
+        function renderCareerEditableSections() {
+            renderSalesMachine();
+            renderFrequency();
+        }
+
+        function renderSalesMachine() {
+            const cardsContainer = document.getElementById('sales-machine-cards');
+            if(cardsContainer) {
+                cardsContainer.innerHTML = '';
+                salesCards.forEach((card, idx) => {
+                    const html = `
+                        <div class="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                            <p class="${card.color} font-black text-xl mb-1 outline-none focus:border-b border-white/20" contenteditable="true" onblur="updateSalesCard(${idx}, 'days', this)">${card.days}</p>
+                            <p class="text-xs text-white uppercase font-bold outline-none focus:border-b border-white/20" contenteditable="true" onblur="updateSalesCard(${idx}, 'title', this)">${card.title}</p>
+                            <p class="text-[10px] text-rani-text/80 mt-1 outline-none focus:border-b border-white/20" contenteditable="true" onblur="updateSalesCard(${idx}, 'subtitle', this)">${card.subtitle}</p>
+                        </div>
+                    `;
+                    cardsContainer.innerHTML += html;
+                });
+            }
+
+            const statsContainer = document.getElementById('sales-machine-stats');
+            if(statsContainer) {
+                statsContainer.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-rani-orange text-rani-bg flex items-center justify-center font-bold shrink-0"><i class="fas fa-bullseye"></i></div>
+                        <div>
+                            <p class="text-xs text-rani-orange font-bold uppercase outline-none focus:border-b border-white/20" contenteditable="true" onblur="updateSalesStats('title', this)">${salesStats.title}</p>
+                            <p class="text-white font-serif outline-none focus:border-b border-white/20" contenteditable="true" onblur="updateSalesStats('value', this)">${salesStats.value}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-rani-text/80 outline-none focus:border-b border-white/20" contenteditable="true" onblur="updateSalesStats('checkLabel', this)">${salesStats.checkLabel}</p>
+                        <p class="text-xs text-white outline-none focus:border-b border-white/20" contenteditable="true" onblur="updateSalesStats('checkValue', this)">${salesStats.checkValue}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderFrequency() {
+            const shortsContainer = document.getElementById('freq-shorts-container');
+            if(shortsContainer) {
+                shortsContainer.innerHTML = '';
+                freqShorts.forEach((item, idx) => {
+                    const html = `
+                        <div>
+                            <div class="flex justify-between text-sm text-white mb-2">
+                                <span class="outline-none focus:border-b border-white/20 cursor-text" contenteditable="true" onblur="updateFreqItem('shorts', ${idx}, 'title', this)">${item.title}</span>
+                                <span class="text-rani-orange text-xs font-bold outline-none focus:border-b border-white/20 cursor-text" contenteditable="true" onblur="updateFreqItem('shorts', ${idx}, 'freq', this)">${item.freq}</span>
+                            </div>
+                            <div class="w-full bg-white/10 h-1.5 rounded-full"><div class="bg-gradient-to-r from-purple-500 via-pink-500 to-white w-[${item.width}] h-full rounded-full opacity-50"></div></div>
+                        </div>
+                    `;
+                    shortsContainer.innerHTML += html;
+                });
+            }
+
+            const ytContainer = document.getElementById('freq-youtube-container');
+            if(ytContainer) {
+                ytContainer.innerHTML = '';
+                freqYoutube.forEach((item, idx) => {
+                    const borderTop = idx === 2 ? 'pt-2 border-t border-white/5 mt-2' : '';
+                    const html = `
+                        <div class="${borderTop}">
+                            <div class="flex justify-between text-sm text-white mb-2">
+                                <span class="outline-none focus:border-b border-white/20 cursor-text" contenteditable="true" onblur="updateFreqItem('youtube', ${idx}, 'title', this)">${item.title}</span>
+                                <span class="${idx === 0 ? 'text-rani-text/80' : 'text-rani-orange'} text-xs font-bold outline-none focus:border-b border-white/20 cursor-text" contenteditable="true" onblur="updateFreqItem('youtube', ${idx}, 'freq', this)">${item.freq}</span>
+                            </div>
+                            <div class="w-full bg-white/10 h-1.5 rounded-full"><div class="bg-red-500 w-[${item.width}] h-full rounded-full ${item.opacity}"></div></div>
+                        </div>
+                    `;
+                    ytContainer.innerHTML += html;
+                });
+            }
+        }
+
+        function updateSalesCard(idx, field, el) {
+            salesCards[idx][field] = el.innerText;
+            localStorage.setItem('rani_sales_cards', JSON.stringify(salesCards));
+        }
+
+        function updateSalesStats(field, el) {
+            salesStats[field] = el.innerText;
+            localStorage.setItem('rani_sales_stats', JSON.stringify(salesStats));
+        }
+
+        function updateFreqItem(type, idx, field, el) {
+            if(type === 'shorts') {
+                freqShorts[idx][field] = el.innerText;
+                localStorage.setItem('rani_freq_shorts', JSON.stringify(freqShorts));
+            } else {
+                freqYoutube[idx][field] = el.innerText;
+                localStorage.setItem('rani_freq_yt', JSON.stringify(freqYoutube));
+            }
+        }
+
+        // --- TÍTULOS DE CARREIRA ---
+        let careerTitles = JSON.parse(localStorage.getItem('rani_career_titles')) || {
+            goals_insta: "Instagram",
+            goals_tiktok: "TikTok",
+            goals_yt: "YouTube",
+            freq_shorts: "Frequência Curta (Insta/TikTok)",
+            freq_yt: "Frequência Youtube"
+        };
+
+        function renderCareerTitles() {
+            const setText = (id, key) => {
+                const el = document.getElementById(id);
+                if(el && careerTitles[key]) el.innerText = careerTitles[key];
+            };
+            setText('lbl-goals-insta', 'goals_insta');
+            setText('lbl-goals-tiktok', 'goals_tiktok');
+            setText('lbl-goals-yt', 'goals_yt');
+            setText('lbl-freq-shorts', 'freq_shorts');
+            setText('lbl-freq-yt', 'freq_yt');
+        }
+
+        function updateCareerTitle(key, el) {
+            careerTitles[key] = el.innerText;
+            localStorage.setItem('rani_career_titles', JSON.stringify(careerTitles));
+        }
+
+        // --- DASHBOARD ---
+        let dashboardCourseIndex = 0;
+
+        function updateDashboardStudyWidget() {
+            const dashTitle = document.getElementById('dash-study-title');
+            const dashCount = document.getElementById('dash-study-count');
+            const dashBar = document.getElementById('dash-study-bar');
+            const dashPct = document.getElementById('dash-study-pct');
+            
+            if (!dashCount) return; 
+
+            if (courses.length > 0) {
+                if (dashboardCourseIndex >= courses.length) dashboardCourseIndex = 0;
+
+                const currentCourse = courses[dashboardCourseIndex];
+                const remaining = currentCourse.totalClasses - currentCourse.classesDone;
+                const pct = currentCourse.totalClasses > 0 ? Math.round((currentCourse.classesDone / currentCourse.totalClasses) * 100) : 0;
+                
+                if(dashTitle) dashTitle.textContent = currentCourse.name;
+                dashCount.textContent = remaining;
+
+                if (dashBar) dashBar.style.width = pct + '%';
+                if (dashPct) dashPct.textContent = pct + '%';
+            } else {
+                if(dashTitle) dashTitle.textContent = "Sem Cursos";
+                dashCount.textContent = "-";
+                if (dashBar) dashBar.style.width = '0%';
+                if (dashPct) dashPct.textContent = '0%';
+            }
+        }
+
+        function rotateDashboardCourse() {
+            if (courses.length > 1) {
+                dashboardCourseIndex = (dashboardCourseIndex + 1) % courses.length;
+                updateDashboardStudyWidget();
+            }
+        }
+        
+        // --- REDES SOCIAIS E INGLÊS ---
+        const savedSocial = JSON.parse(localStorage.getItem('rani_socials'));
+        const socialStats = savedSocial || { instagram: { current: 367, goal: 1000 }, tiktok: { current: 245, goal: 1000 }, youtube: { current: 58, goal: 500 } };
+
+        function syncSocials(el, p) { 
+            socialStats[p].current = parseInt(el.value)||0; 
+            localStorage.setItem('rani_socials', JSON.stringify(socialStats)); 
+            updateSocialUI(); 
+        }
+
+        function updateSocialUI() {
+            const iPct = Math.min(Math.round((socialStats.instagram.current / socialStats.instagram.goal) * 100), 100);
+            if(document.getElementById('career-insta-bar')) document.getElementById('career-insta-bar').style.width = iPct + '%';
+            if(document.getElementById('career-insta-pct')) document.getElementById('career-insta-pct').textContent = `${iPct}% da meta (1k)`;
+            if(document.getElementById('career-insta-input')) document.getElementById('career-insta-input').value = socialStats.instagram.current;
+            
+            const dashInstaText = document.getElementById('dash-insta-val');
+            if(dashInstaText) dashInstaText.textContent = socialStats.instagram.current;
+            const dashInstaBar = document.getElementById('dash-insta-bar');
+            if(dashInstaBar) dashInstaBar.style.width = iPct + '%';
+
+            const tPct = Math.min(Math.round((socialStats.tiktok.current / socialStats.tiktok.goal) * 100), 100);
+            if(document.getElementById('career-tiktok-bar')) document.getElementById('career-tiktok-bar').style.width = tPct + '%';
+            if(document.getElementById('career-tiktok-pct')) document.getElementById('career-tiktok-pct').textContent = `${tPct}% da meta (1k)`;
+            if(document.getElementById('career-tiktok-input')) document.getElementById('career-tiktok-input').value = socialStats.tiktok.current;
+            
+            const dashTiktokText = document.getElementById('dash-tiktok-val');
+            if(dashTiktokText) dashTiktokText.textContent = socialStats.tiktok.current;
+            const dashTiktokBar = document.getElementById('dash-tiktok-bar');
+            if(dashTiktokBar) dashTiktokBar.style.width = iPct + '%';
+
+            const yPct = Math.min(Math.round((socialStats.youtube.current / socialStats.youtube.goal) * 100), 100);
+            if(document.getElementById('career-yt-bar')) document.getElementById('career-yt-bar').style.width = yPct + '%';
+            if(document.getElementById('career-yt-pct')) document.getElementById('career-yt-pct').textContent = `${yPct}% da meta (500)`;
+            if(document.getElementById('career-yt-input')) document.getElementById('career-yt-input').value = socialStats.youtube.current;
+            
+            const dashYtText = document.getElementById('dash-yt-val');
+            if(dashYtText) dashYtText.textContent = socialStats.youtube.current;
+            const dashYtBar = document.getElementById('dash-yt-bar');
+            if(dashYtBar) dashYtBar.style.width = yPct + '%';
+        }
+
+        // --- CHECKLIST DIÁRIO COM MEMÓRIA ---
+        let dailyCheckState = JSON.parse(localStorage.getItem('rani_daily_state')) || { date: '', checks: {} };
+
+        function renderDailyChecklist() {
+            const dayIndex = new Date().getDay(); 
+            const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+            const taskConfig = { "Skincare": {color:"text-pink-400",icon:"fa-star"}, "Remédio Unha": {color:"text-blue-400",icon:"fa-pills"}, "Remédio Tireoide": {color:"text-blue-400",icon:"fa-pills"}, "Remédio Psiquiatra": {color:"text-blue-400",icon:"fa-pills"}, "Pilates": {color:"text-purple-400",icon:"fa-running"}, "Leitura + Diário": {color:"text-yellow-400",icon:"fa-book"}, "App Cíngulo + Diário": {color:"text-teal-400",icon:"fa-brain"}, "Leitura Bíblica": {color:"text-rani-gold",icon:"fa-bible"}, "Limpar Casa": {color:"text-cyan-400",icon:"fa-broom"}, "Fazer Unha": {color:"text-pink-300",icon:"fa-hand-sparkles"}, "Organizar Agenda": {color:"text-white",icon:"fa-calendar-check"}, "Remédios": {color:"text-blue-400",icon:"fa-pills"}, "2L de Água": {color:"text-blue-300",icon:"fa-tint"}, "Remédio TireÓide": {color:"text-blue-400",icon:"fa-pills"}, "Remédio Psiquiátrico": {color:"text-blue-400",icon:"fa-pills"}, "Diário": {color:"text-yellow-400",icon:"fa-book"}, "Remédio": {color:"text-blue-400",icon:"fa-pills"} };
+            
+            const todayStr = new Date().toLocaleDateString('pt-BR');
+            if (dailyCheckState.date !== todayStr) {
+                dailyCheckState = { date: todayStr, checks: {} };
+                localStorage.setItem('rani_daily_state', JSON.stringify(dailyCheckState));
+            }
+
+            let tasks = [];
+            switch(dayIndex) {
+                case 1: case 3: tasks = ["2L de Água", "Skincare", "Remédio Unha", "Remédio TireÓide", "Remédio Psiquiátrico", "Pilates", "Leitura + Diário"]; break;
+                case 2: case 4: tasks = ["2L de Água", "Skincare", "Remédio Unha", "Remédio TireÓide", "Remédio Psiquiátrico", "Pilates", "App Cíngulo + Diário"]; break;
+                case 5: tasks = ["2L de Água", "Skincare", "Remédio Unha", "Remédio TireÓide", "Remédio Psiquiátrico", "Pilates", "Leitura Bíblica", "Limpar Casa"]; break;
+                case 6: tasks = ["2L de Água", "Skincare", "Remédio TireÓide", "Remédio Psiquiátrico", "Remédio Unha", "Diário"]; break;
+                case 0: tasks = ["2L de Água", "Skincare", "Remédio TireÓide", "Remédio Psiquiátrico", "Remédio Unha", "Diário", "Limpar Casa", "Fazer Unha", "Organizar Agenda"]; break;
+            }
+            
+            const container = document.getElementById('daily-checklist-container');
+            if(container) {
+                document.getElementById('daily-checklist-title').textContent = `• ${daysOfWeek[dayIndex]}`;
+                container.innerHTML = '';
+                tasks.forEach(t => {
+                    const c = taskConfig[t] || {color:"text-white",icon:"fa-check"};
+                    
+                    const isChecked = dailyCheckState.checks[t] ? 'checked' : '';
+                    const styleClass = dailyCheckState.checks[t] ? 'line-through opacity-50 text-rani-orange' : 'text-rani-text/90 group-hover:text-white';
+                    const iconClass = dailyCheckState.checks[t] ? 'block' : 'hidden';
+
+                    container.innerHTML += `
+                    <label class="custom-checkbox flex items-center justify-between cursor-pointer group bg-white/5 p-3 rounded-lg hover:bg-white/10 transition-colors border border-transparent hover:border-white/5">
+                        <span class="text-sm transition-colors flex items-center gap-3 ${styleClass}">
+                            <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-sm ${c.color} border border-white/5">
+                                <i class="fas ${c.icon}"></i>
+                            </div>
+                            ${t}
+                        </span>
+                        <input type="checkbox" class="hidden" ${isChecked} onchange="toggleDailyCheck('${t}')">
+                        <div class="w-6 h-6 border-2 border-rani-orange rounded flex items-center justify-center transition-all bg-black/20">
+                            <svg class="w-3 h-3 text-white ${iconClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                    </label>`;
+                });
+            }
+        }
+
+        function toggleDailyCheck(taskName) {
+            dailyCheckState.checks[taskName] = !dailyCheckState.checks[taskName];
+            localStorage.setItem('rani_daily_state', JSON.stringify(dailyCheckState));
+            renderDailyChecklist();
+        }
+        
+        let quoteIdx = 0;
+        const quotes = ["A organização é o primeiro passo para a liberdade.", "Consistência vence intensidade.", "Faça o que precisa ser feito.", "Seu futuro é criado pelo que você faz hoje.", "Disciplina é liberdade.", "Cada pequeno passo conta."];
+        function rotateQuote() {
+            const el = document.getElementById('dynamic-quote');
+            if(el) {
+                el.classList.remove('quote-visible'); el.classList.add('quote-hidden');
+                setTimeout(() => { quoteIdx = (quoteIdx+1)%quotes.length; el.textContent = `"${quotes[quoteIdx]}"`; el.classList.remove('quote-hidden'); el.classList.add('quote-visible'); }, 800);
+            }
+        }
+
+        // --- INGLÊS ---
+        let englishLevels = JSON.parse(localStorage.getItem('rani_english')) || [
+            {id:'A1',sub:'Iniciante',checked:false},
+            {id:'A2',sub:'Básico',checked:false},
+            {id:'B1',sub:'Intermediário',checked:false},
+            {id:'B2',sub:'Intermediário Alto',checked:false},
+            {id:'C1',sub:'Avançado',checked:false},
+            {id:'C1B',sub:'Profissional',checked:false}
+        ];
+
+        function toggleEngLevel(i) { 
+            englishLevels[i].checked = !englishLevels[i].checked; 
+            localStorage.setItem('rani_english', JSON.stringify(englishLevels));
+            renderEnglishLevels(); 
+            updateEnglishDash(); 
+        }
+
+        function renderEnglishLevels() {
+            const c = document.getElementById('english-levels-container');
+            if(c) {
+                c.innerHTML = '';
+                englishLevels.forEach((l,i) => {
+                    const op = l.checked ? 'opacity-100 bg-blue-500/20' : 'opacity-60 bg-blue-500/5 hover:opacity-80';
+                    const ic = l.checked ? 'fas fa-check-circle text-blue-400' : 'far fa-circle text-blue-300/30';
+                    const st = l.checked ? '<span class="text-xs text-blue-400 font-bold ml-1">Concluído</span>' : '';
+                    const br = l.checked ? 'border-blue-500/50' : 'border-blue-500/20';
+                    c.innerHTML += `<div onclick="toggleEngLevel(${i})" class="group cursor-pointer rounded-xl p-3 border ${br} transition-all ${op}"><div class="flex justify-between items-center"><span class="text-sm font-bold text-white flex items-center gap-3"><i class="${ic} text-lg transition-colors"></i><div><span class="block">${l.id} ${st}</span><span class="text-xs font-normal text-rani-text/60">${l.sub}</span></div></span></div></div>`;
+                });
+            }
+        }
+        
+        function updateEnglishDash() {
+            const pct = Math.round((englishLevels.filter(l=>l.checked).length / englishLevels.length)*100);
+            const last = englishLevels.findLastIndex(l=>l.checked);
+            const curr = last !== -1 ? englishLevels[last] : {id:'-',sub:'Iniciante'};
+            const next = last < englishLevels.length-1 ? englishLevels[last+1].id : 'Concluído';
+            
+            if(document.getElementById('dash-eng-lvl')) {
+                document.getElementById('dash-eng-lvl').textContent = curr.id;
+                document.getElementById('dash-eng-sub').textContent = curr.sub;
+                document.getElementById('dash-eng-bar').style.width = pct+'%';
+                document.getElementById('dash-eng-next').textContent = 'Próximo: ' + next;
+            }
+            if(document.getElementById('eng-page-pct')) {
+                document.getElementById('eng-page-pct').textContent = pct+'%';
+                document.getElementById('eng-page-bar').style.width = pct+'%';
+            }
+        }
+
+        function updateProfileImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-img').src = e.target.result;
+                    localStorage.setItem('rani_profile_pic', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // --- INICIALIZAÇÃO ---
+        window.onload = function() {
+            updateDate();
+            renderEnglishLevels();
+            updateEnglishDash();
+            renderDailyChecklist(); 
+            updateSocialUI(); 
+            renderCRMTable();        
+            renderPaymentsTable();  
+            updateAllFinance(); 
+            renderCourses(); 
+            renderNotes();
+            renderHealthCarousel();
+            renderRefluxList();
+            renderCareerTasks();
+            renderCareerEditableSections();
+            renderCareerTitles(); 
+            
+            const pic = localStorage.getItem('rani_profile_pic');
+            if(pic) document.getElementById('profile-img').src = pic;
+
+            const relNotes = localStorage.getItem('rani_rel_notes');
+            if(relNotes && document.getElementById('relationship-notes')) {
+                document.getElementById('relationship-notes').value = relNotes;
+            }
+
+            const cNotes = localStorage.getItem('rani_career_notes');
+            if(cNotes && document.getElementById('career-notes-input')) {
+                document.getElementById('career-notes-input').value = cNotes;
+            }
+            
+            setInterval(rotateQuote, 5000);
+            setInterval(rotateDashboardCourse, 5000);
+        }
+
+    </script>
+</body>
+</html>
